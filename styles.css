@@ -33,12 +33,12 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 6px;
-    background: rgba(26, 35, 50, 0.5);
+    height: 8px;
+    background: rgba(26, 35, 50, 0.8);
     z-index: 10001;
     opacity: 0;
     transition: opacity 0.3s ease;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .scroll-progress.visible {
@@ -54,57 +54,72 @@ body {
     background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
     box-shadow: 0 0 15px rgba(197, 255, 104, 0.6);
     transition: width 0.1s ease-out;
+    z-index: 2;
 }
 
-/* Flying plane on progress bar */
-.scroll-plane {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.5rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-    transition: left 0.1s ease-out;
-    z-index: 10;
-}
-
-/* Animated clouds */
+/* Animated clouds - positioned behind */
 .scroll-cloud {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 1.2rem;
-    opacity: 0.4;
-    animation: cloudFloat 8s ease-in-out infinite;
+    opacity: 0;
+    animation: cloudFloat 12s ease-in-out infinite;
+    z-index: 1;
+    pointer-events: none;
 }
 
-.scroll-cloud:nth-child(1) {
-    animation-delay: 0s;
+.scroll-cloud svg {
+    width: 40px;
+    height: 24px;
 }
 
 .scroll-cloud:nth-child(2) {
-    animation-delay: 2s;
+    animation-delay: 0s;
 }
 
 .scroll-cloud:nth-child(3) {
     animation-delay: 4s;
 }
 
+.scroll-cloud:nth-child(4) {
+    animation-delay: 8s;
+}
+
 @keyframes cloudFloat {
-    0%, 100% {
-        left: -5%;
+    0% {
+        left: -10%;
         opacity: 0;
     }
-    10%, 90% {
-        opacity: 0.4;
+    10% {
+        opacity: 0.3;
     }
     50% {
-        left: 50%;
-        opacity: 0.6;
+        opacity: 0.4;
+    }
+    90% {
+        opacity: 0.3;
     }
     100% {
-        left: 105%;
+        left: 110%;
         opacity: 0;
     }
+}
+
+/* Flying plane on progress bar - in front */
+.scroll-plane {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    left: 0%;
+    z-index: 10;
+    transition: left 0.1s ease-out;
+    pointer-events: none;
+}
+
+.scroll-plane svg {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
 }
 
 /* Skip Link for Accessibility */
