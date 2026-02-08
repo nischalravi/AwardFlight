@@ -1,31 +1,37 @@
 // ============================================
-// SEARCH PAGE FUNCTIONALITY
+// SEARCH PAGE FUNCTIONALITY - FIXED
 // ============================================
 
 let currentFilters = {
     priceMax: 2000,
-    stops: { 0: true, 1: true, 2: true },  // All checked initially to match UI
+    // START WITH ALL CHECKED - Show all flights initially
+    stops: { 0: true, 1: true, 2: true },
     airlines: {
         'Air France': true,
         'British Airways': true,
         'Lufthansa': true,
-        'Emirates': true  // Changed to true to show all initially
+        'Emirates': true
     },
     departTime: {
         'morning': true,
         'afternoon': true,
-        'evening': true  // Changed to true to show all initially
+        'evening': true
     }
 };
 
-let currentView = 'price'; // or 'points'
+let currentView = 'price';
 
 // ============================================
 // RENDER FLIGHT CARDS
 // ============================================
 
 function renderFlights() {
-    const filteredFlights = flightDatabase.filter(flight => {
+    if (!window.flightDatabase) {
+        console.error('Flight database not loaded');
+        return;
+    }
+    
+    const filteredFlights = window.flightDatabase.filter(flight => {
         if (flight.price > currentFilters.priceMax) return false;
         if (!currentFilters.stops[flight.stops]) return false;
         if (!currentFilters.airlines[flight.airline]) return false;
@@ -34,33 +40,39 @@ function renderFlights() {
     });
 
     const container = document.getElementById('flights-container');
-    document.getElementById('results-count').textContent = filteredFlights.length;
-
-    container.innerHTML = filteredFlights.map(flight => createFlightCard(flight)).join('');
+    const countElement = document.getElementById('results-count');
     
-    // Add event listeners to award toggles
-    document.querySelectorAll('.award-toggle').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const details = this.closest('.award-info').querySelector('.award-details-expanded');
-            details.classList.toggle('show');
-            this.textContent = details.classList.contains('show') ? 'Hide Details ▲' : 'Show Details ▼';
-        });
-    });
+    if (countElement) {
+        countElement.textContent = filteredFlights.length;
+    }
 
-    // Add click handler to select buttons
-    document.querySelectorAll('.btn-select').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            window.location.href = 'dashboard.html';
+    if (container) {
+        container.innerHTML = filteredFlights.map(flight => createFlightCard(flight)).join('');
+        
+        // Add event listeners to award toggles
+        document.querySelectorAll('.award-toggle').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const details = this.closest('.award-info').querySelector('.award-details-expanded');
+                details.classList.toggle('show');
+                this.textContent = details.classList.contains('show') ? 'Hide Details ▲' : 'Show Details ▼';
+            });
         });
-    });
+
+        // Add click handler to select buttons
+        document.querySelectorAll('.btn-select').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                window.location.href = 'dashboard.html';
+            });
+        });
+    }
 
     updateFilterCounts();
 }
 
 function createFlightCard(flight) {
-    const cabinClass = 'business'; // Would come from search params
+    const cabinClass = 'business';
     const milesNeeded = flight.awardMiles.businessClass;
     
     return `
@@ -157,7 +169,7 @@ function createFlightCard(flight) {
 }
 
 // ============================================
-// FILTER HANDLERS
+// UPDATE FILTER COUNTS
 // ============================================
 
 function updateFilterCounts() {
@@ -167,7 +179,7 @@ function updateFilterCounts() {
         departTime: { morning: 0, afternoon: 0, evening: 0 }
     };
 
-    flightDatabase.forEach(flight => {
+    window.flightDatabase.forEach(flight => {
         if (flight.price <= currentFilters.priceMax) {
             counts.stops[flight.stops]++;
             counts.airlines[flight.airline] = (counts.airlines[flight.airline] || 0) + 1;
@@ -196,14 +208,13 @@ function updateFilterCounts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Create scroll progress indicator with plane and clouds
+    // Create scroll progress (plane and clouds)
     const progressContainer = document.createElement('div');
     progressContainer.className = 'scroll-progress';
     
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress-bar';
     
-    // Create SVG plane pointing RIGHT
     const plane = document.createElement('div');
     plane.className = 'scroll-plane';
     plane.innerHTML = `
@@ -215,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </svg>
     `;
     
-    // Create cloud SVG elements
     const createCloud = () => {
         const cloud = document.createElement('div');
         cloud.className = 'scroll-cloud';
@@ -239,15 +249,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(progressContainer);
     
     let scrollTimeout;
-    
-    // Update progress on scroll
     window.addEventListener('scroll', () => {
         const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const scrolled = (window.scrollY / windowHeight) * 100;
         
         progressBar.style.width = scrolled + '%';
         plane.style.left = scrolled + '%';
-        
         progressContainer.classList.add('visible');
         
         clearTimeout(scrollTimeout);
@@ -266,17 +273,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const cabinClass = params.get('class') || 'business';
 
     // Update header
-    document.getElementById('header-from').textContent = from;
-    document.getElementById('header-to').textContent = to;
+    if (document.getElementById('header-from')) {
+        document.getElementById('header-from').textContent = from;
+    }
+    if (document.getElementById('header-to')) {
+        document.getElementById('header-to').textContent = to;
+    }
     if (departure && returnDate) {
         const deptDate = new Date(departure).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const retDate = new Date(returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        document.getElementById('header-dates').textContent = `${deptDate} - ${retDate}`;
+        if (document.getElementById('header-dates')) {
+            document.getElementById('header-dates').textContent = `${deptDate} - ${retDate}`;
+        }
     }
-    document.getElementById('header-class').textContent = `${cabinClass.charAt(0).toUpperCase() + cabinClass.slice(1)} • ${passengers} Passenger${passengers > 1 ? 's' : ''}`;
+    if (document.getElementById('header-class')) {
+        document.getElementById('header-class').textContent = `${cabinClass.charAt(0).toUpperCase() + cabinClass.slice(1)} • ${passengers} Passenger${passengers > 1 ? 's' : ''}`;
+    }
 
-    // Initial render
-    renderFlights();
+    // Initial render - wait for flight database to load
+    if (window.flightDatabase) {
+        renderFlights();
+    } else {
+        // If flightDatabase not loaded yet, wait a bit
+        setTimeout(() => {
+            if (window.flightDatabase) {
+                renderFlights();
+            } else {
+                console.error('Flight database not loaded!');
+                document.getElementById('flights-container').innerHTML = `
+                    <div style="text-align: center; padding: 4rem; color: #8a99b3;">
+                        <h3>Loading flights...</h3>
+                        <p>Please make sure search-flights-data.js is loaded</p>
+                    </div>
+                `;
+            }
+        }, 500);
+    }
 
     // Filter checkboxes
     document.querySelectorAll('.filter-option').forEach(option => {
@@ -302,44 +334,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Price slider
     const priceSlider = document.querySelector('.price-slider');
-    priceSlider.addEventListener('input', function() {
-        currentFilters.priceMax = parseInt(this.value);
-        const priceRange = document.querySelector('.price-range span:last-child');
-        priceRange.textContent = currentFilters.priceMax >= 2000 ? '$2,000+' : `$${currentFilters.priceMax.toLocaleString()}`;
-        renderFlights();
-    });
+    if (priceSlider) {
+        priceSlider.addEventListener('input', function() {
+            currentFilters.priceMax = parseInt(this.value);
+            const priceRange = document.querySelector('.price-range span:last-child');
+            if (priceRange) {
+                priceRange.textContent = currentFilters.priceMax >= 2000 ? '$2,000+' : `$${currentFilters.priceMax.toLocaleString()}`;
+            }
+            renderFlights();
+        });
+    }
 
     // Sort dropdown
-    document.getElementById('sort-select').addEventListener('change', function() {
-        const sortBy = this.value;
-        
-        if (sortBy === 'Lowest Price') {
-            flightDatabase.sort((a, b) => a.price - b.price);
-        } else if (sortBy === 'Fewest Miles') {
-            flightDatabase.sort((a, b) => a.awardMiles.businessClass - b.awardMiles.businessClass);
-        } else if (sortBy === 'Shortest Duration') {
-            flightDatabase.sort((a, b) => {
-                const getDuration = (d) => {
-                    const parts = d.match(/(\d+)h\s*(\d+)m/);
-                    return parseInt(parts[1]) * 60 + parseInt(parts[2]);
-                };
-                return getDuration(a.duration) - getDuration(b.duration);
-            });
-        } else if (sortBy === 'Earliest Departure') {
-            flightDatabase.sort((a, b) => {
-                const getMinutes = (t) => {
-                    const [time, period] = t.split(' ');
-                    let [hours, minutes] = time.split(':').map(Number);
-                    if (period === 'PM' && hours !== 12) hours += 12;
-                    if (period === 'AM' && hours === 12) hours = 0;
-                    return hours * 60 + minutes;
-                };
-                return getMinutes(a.departTime) - getMinutes(b.departTime);
-            });
-        }
-        
-        renderFlights();
-    });
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const sortBy = this.value;
+            
+            if (sortBy === 'Lowest Price') {
+                window.flightDatabase.sort((a, b) => a.price - b.price);
+            } else if (sortBy === 'Fewest Miles') {
+                window.flightDatabase.sort((a, b) => a.awardMiles.businessClass - b.awardMiles.businessClass);
+            } else if (sortBy === 'Shortest Duration') {
+                window.flightDatabase.sort((a, b) => {
+                    const getDuration = (d) => {
+                        const parts = d.match(/(\d+)h\s*(\d+)m/);
+                        return parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                    };
+                    return getDuration(a.duration) - getDuration(b.duration);
+                });
+            } else if (sortBy === 'Earliest Departure') {
+                window.flightDatabase.sort((a, b) => {
+                    const getMinutes = (t) => {
+                        const [time, period] = t.split(' ');
+                        let [hours, minutes] = time.split(':').map(Number);
+                        if (period === 'PM' && hours !== 12) hours += 12;
+                        if (period === 'AM' && hours === 12) hours = 0;
+                        return hours * 60 + minutes;
+                    };
+                    return getMinutes(a.departTime) - getMinutes(b.departTime);
+                });
+            }
+            
+            renderFlights();
+        });
+    }
 
     // View toggle (Price vs Points)
     document.querySelectorAll('.view-btn').forEach(btn => {
@@ -349,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (this.textContent.includes('Points')) {
                 currentView = 'points';
-                // Could update display to show miles-based sorting
             } else {
                 currentView = 'price';
             }
