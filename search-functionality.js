@@ -2,6 +2,50 @@
 // SEARCH PAGE FUNCTIONALITY - FIXED
 // ============================================
 
+// Add to top of file
+const FlightDataService = require('./flightradar-integration.js');
+const flightService = new FlightDataService();
+
+// Replace renderFlights() to use real data
+async function fetchAndRenderRealFlights(from, to) {
+    try {
+        // Show loading
+        document.getElementById('flights-container').innerHTML = `
+            <div style="text-align: center; padding: 4rem;">
+                <h3>🔍 Searching real-time flights...</h3>
+                <p>Checking ${from} to ${to}</p>
+            </div>
+        `;
+        
+        // Get real flights
+        const realFlights = await flightService.getFlightsForRoute(from, to);
+        
+        if (realFlights.length === 0) {
+            // Fall back to your static database
+            renderFlights();
+            showToast('Using cached flight data', 'info');
+            return;
+        }
+        
+        // Combine with award miles data
+        const flightsWithAward = await flightService.getFlightsWithAwardData(
+            from, to, awardMilesDatabase
+        );
+        
+        // Render real data
+        window.flightDatabase = flightsWithAward;
+        renderFlights();
+        
+        showToast(`Found ${flightsWithAward.length} live flights!`, 'success');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        // Fallback to static data
+        renderFlights();
+        showToast('Using cached data', 'info');
+    }
+}
+
 let currentFilters = {
     priceMax: 2000,
     // START WITH ALL CHECKED - Show all flights initially
