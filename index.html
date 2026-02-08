@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velox - Smart Flight Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container-header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Velox</span>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="active">Home</a>
+                <a href="search.html">Search Flights</a>
+                <a href="deals.html">Deals</a>
+                <a href="rewards.html">Rewards</a>
+                <a href="blog.html">Travel Guide</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-secondary">Sign In</button>
+                <button class="btn-primary">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Find Your Perfect Flight
+                    <span class="gradient-text">At The Best Price</span>
+                </h1>
+                <p class="hero-subtitle">Search across 500+ airlines and find award flights using your points. Compare prices, cabin classes, and book with confidence.</p>
+                
+                <!-- Search Widget -->
+                <div class="search-widget">
+                    <div class="search-tabs">
+                        <button class="tab-btn active" data-tab="roundtrip">Round Trip</button>
+                        <button class="tab-btn" data-tab="oneway">One Way</button>
+                        <button class="tab-btn" data-tab="multi">Multi-City</button>
+                    </div>
+                    
+                    <div class="search-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>From</label>
+                                <input type="text" placeholder="JFK - New York" class="input-airport">
+                            </div>
+                            <button class="swap-btn">⇄</button>
+                            <div class="form-group">
+                                <label>To</label>
+                                <input type="text" placeholder="MXP - Milan" class="input-airport">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Departure</label>
+                                <input type="date" class="input-date">
+                            </div>
+                            <div class="form-group">
+                                <label>Return</label>
+                                <input type="date" class="input-date">
+                            </div>
+                            <div class="form-group">
+                                <label>Passengers</label>
+                                <select class="input-select">
+                                    <option>1 Passenger</option>
+                                    <option>2 Passengers</option>
+                                    <option>3 Passengers</option>
+                                    <option>4+ Passengers</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Class</label>
+                                <select class="input-select">
+                                    <option>Economy</option>
+                                    <option>Premium Economy</option>
+                                    <option>Business</option>
+                                    <option>First Class</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-search">
+                            <span>Search Flights</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M9 17L15 11L9 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Velox?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Smart Search</h3>
+                    <p>Compare prices across 500+ airlines and travel sites in seconds</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h3>Award Flights</h3>
+                    <p>Find the best deals using your airline miles and credit card points</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Price Tracking</h3>
+                    <p>Get alerts when prices drop for your favorite routes</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Flexible Dates</h3>
+                    <p>See prices across multiple dates to find the cheapest option</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Routes -->
+    <section class="popular-routes">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Popular Routes</h2>
+                <a href="search.html" class="link-view-all">View All →</a>
+            </div>
+            <div class="routes-grid">
+                <div class="route-card">
+                    <div class="route-info">
+                        <div class="route-cities">
+                            <span class="city-code">JFK</span>
+                            <span class="route-arrow">→</span>
+                            <span class="city-code">LHR</span>
+                        </div>
+                        <div class="route-names">New York to London</div>
+                    </div>
+                    <div class="route-price">
+                        <span class="price-from">from</span>
+                        <span class="price-amount">$345</span>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <div class="route-cities">
+                            <span class="city-code">LAX</span>
+                            <span class="route-arrow">→</span>
+                            <span class="city-code">NRT</span>
+                        </div>
+                        <div class="route-names">Los Angeles to Tokyo</div>
+                    </div>
+                    <div class="route-price">
+                        <span class="price-from">from</span>
+                        <span class="price-amount">$520</span>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <div class="route-cities">
+                            <span class="city-code">SFO</span>
+                            <span class="route-arrow">→</span>
+                            <span class="city-code">CDG</span>
+                        </div>
+                        <div class="route-names">San Francisco to Paris</div>
+                    </div>
+                    <div class="route-price">
+                        <span class="price-from">from</span>
+                        <span class="price-amount">$410</span>
+                    </div>
+                </div>
+                
+                <div class="route-card">
+                    <div class="route-info">
+                        <div class="route-cities">
+                            <span class="city-code">MIA</span>
+                            <span class="route-arrow">→</span>
+                            <span class="city-code">BCN</span>
+                        </div>
+                        <div class="route-names">Miami to Barcelona</div>
+                    </div>
+                    <div class="route-price">
+                        <span class="price-from">from</span>
+                        <span class="price-amount">$395</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Start Your Journey?</h2>
+                <p>Join thousands of travelers who save money on flights every day</p>
+                <button class="btn-cta">Get Started Free</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo">
+                        <div class="logo-icon"></div>
+                        <span>Velox</span>
+                    </div>
+                    <p>Your smart travel companion for finding the best flight deals worldwide.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Velox. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
