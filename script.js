@@ -275,12 +275,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress-bar';
     
-    // Create SVG plane
+    // Create SVG plane pointing RIGHT (forward)
     const plane = document.createElement('div');
     plane.className = 'scroll-plane';
     plane.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" 
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 28 16 L 18 12 L 18 8 C 18 6.5 17 5 16 5 C 15 5 14 6.5 14 8 L 14 12 L 4 16 L 4 18 L 14 16 L 14 24 L 11 26 L 11 28 L 16 27 L 21 28 L 21 26 L 18 24 L 18 16 L 28 18 Z" 
                   fill="#c5ff68" 
                   stroke="#a8e050" 
                   stroke-width="0.5"/>
