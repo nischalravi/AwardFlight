@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velox - Website Sitemap & Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0f1e;
+            --bg-secondary: #1a2332;
+            --bg-card: #1e2836;
+            --accent-green: #c5ff68;
+            --accent-blue: #4a9cff;
+            --text-primary: #ffffff;
+            --text-secondary: #8a99b3;
+            --border-color: #2a3644;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 3rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #c5ff68, #4a9cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 4rem;
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-bottom: 3rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-home:hover {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            border-color: var(--accent-green);
+            transform: translateX(-5px);
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            position: relative;
+        }
+
+        .page-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 350px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .page-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .page-card.primary {
+            border-color: var(--accent-green);
+            background: linear-gradient(135deg, rgba(197, 255, 104, 0.1), rgba(74, 156, 255, 0.1));
+        }
+
+        .page-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-filename {
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .page-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .page-features {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+
+        .page-features li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-features li::before {
+            content: '✓';
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .btn-view {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-green), #a8e050);
+            color: var(--bg-primary);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(197, 255, 104, 0.4);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--accent-green);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .feature-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .feature-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-green);
+        }
+
+        .feature-box ul {
+            list-style: none;
+        }
+
+        .feature-box li {
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-box li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+        }
+
+        .screenshot-preview {
+            width: 100%;
+            height: 200px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 3rem;
+            border: 2px dashed var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-home">← Back to Home</a>
+        
+        <h1>Velox Website Sitemap</h1>
+        <p class="subtitle">Complete user journey and page flow visualization</p>
+
+        <div class="flow-diagram">
+            <!-- Row 1: Landing Page -->
+            <div class="flow-row">
+                <div class="page-card primary">
+                    <div class="page-number">1</div>
+                    <div class="page-title">🏠 Landing Page</div>
+                    <div class="page-filename">index.html</div>
+                    <div class="page-description">
+                        First page users see. Features hero section with search widget, popular routes, and call-to-action.
+                    </div>
+                    <ul class="page-features">
+                        <li>Hero with search form</li>
+                        <li>Trip type tabs (Round/One-way/Multi)</li>
+                        <li>Features showcase</li>
+                        <li>Popular routes</li>
+                        <li>CTA section</li>
+                    </ul>
+                    <a href="index.html" class="btn-view">View Page →</a>
+                    <div class="screenshot-preview">🏠</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <!-- Row 2: Search Results -->
+            <div class="flow-row">
+                <div class="page-card primary">
+                    <div class="page-number">2</div>
+                    <div class="page-title">🔍 Search Results</div>
+                    <div class="page-filename">search.html</div>
+                    <div class="page-description">
+                        Displays filtered flight options with comprehensive filters and sorting. Shows all matching flights with details.
+                    </div>
+                    <ul class="page-features">
+                        <li>Filter sidebar (price, stops, airlines)</li>
+                        <li>44 flight results</li>
+                        <li>Sort by price/duration/time</li>
+                        <li>Flight cards with details</li>
+                        <li>Select flight button</li>
+                    </ul>
+                    <a href="search.html" class="btn-view">View Page →</a>
+                    <div class="screenshot-preview">🔍</div>
+                </div>
+            </div>
+
+            <div class="arrow">↓</div>
+
+            <!-- Row 3: Dashboard -->
+            <div class="flow-row">
+                <div class="page-card primary">
+                    <div class="page-number">3</div>
+                    <div class="page-title">📊 Dashboard</div>
+                    <div class="page-filename">dashboard.html</div>
+                    <div class="page-description">
+                        User's personalized dashboard showing flight tracking, seat selection, and booking management.
+                    </div>
+                    <ul class="page-features">
+                        <li>Interactive world map</li>
+                        <li>Flight tracking animation</li>
+                        <li>Seat selection interface</li>
+                        <li>Upcoming flights list</li>
+                        <li>Hot deals section</li>
+                    </ul>
+                    <a href="dashboard.html" class="btn-view">View Page →</a>
+                    <div class="screenshot-preview">📊</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="font-size: 2.5rem; margin: 4rem 0 2rem;">User Journey Flow</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-box">
+                <h3>Step 1: Discovery</h3>
+                <ul>
+                    <li>User lands on homepage</li>
+                    <li>Views hero section</li>
+                    <li>Reads about features</li>
+                    <li>Sees popular routes</li>
+                    <li>Enters search criteria</li>
+                    <li>Clicks "Search Flights"</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>Step 2: Search</h3>
+                <ul>
+                    <li>Arrives at search results</li>
+                    <li>Sees 44 matching flights</li>
+                    <li>Applies filters (price, stops)</li>
+                    <li>Sorts by preference</li>
+                    <li>Compares options</li>
+                    <li>Clicks "Select Flight"</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>Step 3: Booking</h3>
+                <ul>
+                    <li>Views dashboard</li>
+                    <li>Sees flight on map</li>
+                    <li>Selects seats</li>
+                    <li>Reviews booking details</li>
+                    <li>Sees price breakdown</li>
+                    <li>Clicks "Checkout"</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Responsive design</li>
+                    <li>Dark theme UI</li>
+                    <li>Smooth animations</li>
+                    <li>Interactive filters</li>
+                    <li>Real-time updates</li>
+                    <li>Mobile friendly</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>Technical Stack</h3>
+                <ul>
+                    <li>Pure HTML5</li>
+                    <li>Modern CSS3</li>
+                    <li>Vanilla JavaScript</li>
+                    <li>No frameworks needed</li>
+                    <li>LocalStorage integration</li>
+                    <li>SVG animations</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>Design System</h3>
+                <ul>
+                    <li>Outfit font family</li>
+                    <li>Lime green accents</li>
+                    <li>Navy blue base</li>
+                    <li>20-30px border radius</li>
+                    <li>Smooth transitions</li>
+                    <li>Glass morphism effects</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 style="font-size: 2.5rem; margin: 4rem 0 2rem;">Page Interactions</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-box">
+                <h3>🏠 Homepage Actions</h3>
+                <ul>
+                    <li>Enter origin/destination</li>
+                    <li>Swap airports button</li>
+                    <li>Select dates</li>
+                    <li>Choose passengers/class</li>
+                    <li>Switch trip types</li>
+                    <li>Click popular routes</li>
+                    <li>Navigate to features</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>🔍 Search Actions</h3>
+                <ul>
+                    <li>Toggle filter checkboxes</li>
+                    <li>Adjust price slider</li>
+                    <li>Sort results dropdown</li>
+                    <li>Click flight cards</li>
+                    <li>Select flight button</li>
+                    <li>Modify search criteria</li>
+                    <li>View flight details</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>📊 Dashboard Actions</h3>
+                <ul>
+                    <li>View flight on map</li>
+                    <li>Select/deselect seats</li>
+                    <li>Review upcoming flights</li>
+                    <li>Browse hot deals</li>
+                    <li>Track flight progress</li>
+                    <li>Modify booking</li>
+                    <li>Proceed to checkout</li>
+                </ul>
+            </div>
+
+            <div class="feature-box">
+                <h3>🎨 Visual Elements</h3>
+                <ul>
+                    <li>Animated plane icons</li>
+                    <li>Pulsing markers</li>
+                    <li>Gradient backgrounds</li>
+                    <li>Hover effects</li>
+                    <li>Loading skeletons</li>
+                    <li>Toast notifications</li>
+                    <li>Smooth page transitions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem; padding: 3rem; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-color);">
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--accent-green);">🚀 Quick Start Guide</h2>
+            <ol style="color: var(--text-secondary); line-height: 2; padding-left: 2rem;">
+                <li><strong style="color: var(--text-primary);">Open index.html</strong> - Start at the landing page</li>
+                <li><strong style="color: var(--text-primary);">Enter search details</strong> - Fill in origin, destination, dates</li>
+                <li><strong style="color: var(--text-primary);">Click "Search Flights"</strong> - Navigate to search results</li>
+                <li><strong style="color: var(--text-primary);">Apply filters</strong> - Refine results by price, stops, airlines</li>
+                <li><strong style="color: var(--text-primary);">Select a flight</strong> - Click "Select Flight" button</li>
+                <li><strong style="color: var(--text-primary);">View dashboard</strong> - See booking details and map</li>
+                <li><strong style="color: var(--text-primary);">Choose seats</strong> - Click seats to select (D1, E1)</li>
+                <li><strong style="color: var(--text-primary);">Checkout</strong> - Review total and complete booking</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(197, 255, 104, 0.1), rgba(74, 156, 255, 0.1)); border-radius: 20px; text-align: center;">
+            <h3 style="font-size: 1.75rem; margin-bottom: 1rem;">📁 All Files Included</h3>
+            <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: 2rem;">
+                <div style="background: var(--bg-card); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                    <div style="font-family: 'Courier New', monospace; color: var(--accent-blue);">index.html</div>
+                </div>
+                <div style="background: var(--bg-card); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                    <div style="font-family: 'Courier New', monospace; color: var(--accent-blue);">search.html</div>
+                </div>
+                <div style="background: var(--bg-card); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                    <div style="font-family: 'Courier New', monospace; color: var(--accent-blue);">dashboard.html</div>
+                </div>
+                <div style="background: var(--bg-card); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎨</div>
+                    <div style="font-family: 'Courier New', monospace; color: var(--accent-blue);">styles.css</div>
+                </div>
+                <div style="background: var(--bg-card); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+                    <div style="font-family: 'Courier New', monospace; color: var(--accent-blue);">script.js</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
