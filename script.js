@@ -1,40 +1,167 @@
+// Form submission handler
+document.addEventListener('DOMContentLoaded', () => {
+    // Set default dates
+    const dateInputs = document.querySelectorAll('.input-date');
+    if (dateInputs.length >= 2) {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 10);
+        
+        const formatDate = (date) => {
+            return date.toISOString().split('T')[0];
+        };
+        
+        dateInputs[0].value = formatDate(today);
+        dateInputs[0].min = formatDate(today);
+        dateInputs[1].value = formatDate(tomorrow);
+        dateInputs[1].min = formatDate(today);
+    }
+
+    // Search form submission
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const from = document.getElementById('input-from')?.value || 'JFK';
+            const to = document.getElementById('input-to')?.value || 'MXP';
+            const departure = document.getElementById('input-departure')?.value;
+            const returnDate = document.getElementById('input-return')?.value;
+            const passengers = document.getElementById('input-passengers')?.value || '2';
+            const cabinClass = document.getElementById('input-class')?.value || 'business';
+            
+            // Validate
+            if (!from || !to) {
+                alert('Please enter both origin and destination airports');
+                return;
+            }
+            
+            // Navigate to search page
+            window.location.href = `search.html?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&departure=${departure}&return=${returnDate}&passengers=${passengers}&class=${cabinClass}`;
+        });
+    }
+});
+
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // Remove active from all tabs
+        document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-selected', 'false');
+        });
+        
+        // Add active to clicked tab
         this.classList.add('active');
-    });
-});
-
-// Airport swap
-document.querySelectorAll('.swap-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const inputs = this.parentElement.querySelectorAll('.input-airport');
-        if (inputs.length === 2) {
-            const temp = inputs[0].value;
-            inputs[0].value = inputs[1].value;
-            inputs[1].value = temp;
+        this.setAttribute('aria-selected', 'true');
+        
+        // Handle return date visibility for one-way
+        const returnGroup = document.querySelector('.form-group:has(#input-return)');
+        if (returnGroup) {
+            if (this.dataset.tab === 'oneway') {
+                returnGroup.style.display = 'none';
+            } else {
+                returnGroup.style.display = 'flex';
+            }
         }
     });
 });
 
-// Search button
-document.querySelectorAll('.btn-search').forEach(btn => {
+// Airport swap with animation
+document.querySelectorAll('.swap-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-        window.location.href = 'search.html';
+        const fromInput = document.getElementById('input-from');
+        const toInput = document.getElementById('input-to');
+        
+        if (fromInput && toInput) {
+            const temp = fromInput.value;
+            fromInput.value = toInput.value;
+            toInput.value = temp;
+            
+            // Add animation class
+            this.style.transform = 'rotate(180deg)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 300);
+        }
     });
+});
+
+// Mobile menu toggle
+const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+const nav = document.querySelector('.nav');
+
+if (mobileMenuToggle && nav) {
+    mobileMenuToggle.addEventListener('click', () => {
+        const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
+        mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
+        nav.classList.toggle('active');
+    });
+}
+
+// Popular route cards click handler
+document.querySelectorAll('.route-card').forEach(card => {
+    const clickHandler = () => {
+        const cityCode = card.querySelectorAll('.city-code');
+        if (cityCode.length >= 2) {
+            const from = cityCode[0].textContent;
+            const to = cityCode[1].textContent;
+            window.location.href = `search.html?from=${from}&to=${to}`;
+        }
+    };
+    
+    card.addEventListener('click', clickHandler);
+    card.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            clickHandler();
+        }
+    });
+});
+
+// CTA buttons
+document.querySelectorAll('.btn-cta').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Scroll to search widget
+        const searchWidget = document.querySelector('.search-widget');
+        if (searchWidget) {
+            searchWidget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Focus first input
+            setTimeout(() => {
+                document.getElementById('input-from')?.focus();
+            }, 500);
+        }
+    });
+});
+
+// Search button on other pages
+document.querySelectorAll('.btn-search').forEach(btn => {
+// Search button on other pages
+document.querySelectorAll('.btn-search').forEach(btn => {
+    if (!btn.closest('.search-form')) {
+        btn.addEventListener('click', function() {
+            window.location.href = 'search.html';
+        });
+    }
 });
 
 // Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+        const href = this.getAttribute('href');
+        if (href !== '#') {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                // Update focus for accessibility
+                target.setAttribute('tabindex', '-1');
+                target.focus();
+            }
         }
     });
 });
@@ -54,7 +181,7 @@ function animateCounter(element, target, duration = 2000) {
     }, 16);
 }
 
-// Observe elements for animation
+// Intersection Observer for animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -100px 0px'
@@ -65,6 +192,7 @@ const observer = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             entry.target.style.opacity = '1';
             entry.target.style.transform = 'translateY(0)';
+            observer.unobserve(entry.target);
         }
     });
 }, observerOptions);
@@ -79,41 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Mobile menu toggle
-const createMobileMenu = () => {
-    const header = document.querySelector('.header');
-    if (window.innerWidth <= 900 && !document.querySelector('.mobile-menu-btn')) {
-        const menuBtn = document.createElement('button');
-        menuBtn.className = 'mobile-menu-btn';
-        menuBtn.innerHTML = '☰';
-        menuBtn.style.cssText = `
-            display: block;
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        `;
-        header.querySelector('.container-header').appendChild(menuBtn);
-        
-        menuBtn.addEventListener('click', () => {
-            const nav = document.querySelector('.nav');
-            nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
-            nav.style.position = 'absolute';
-            nav.style.top = '100%';
-            nav.style.left = '0';
-            nav.style.right = '0';
-            nav.style.background = 'var(--bg-card)';
-            nav.style.flexDirection = 'column';
-            nav.style.padding = '1rem';
-        });
-    }
-};
-
-window.addEventListener('resize', createMobileMenu);
-createMobileMenu();
-
-// Form validation
+// Form validation helper
 const validateForm = (form) => {
     const inputs = form.querySelectorAll('input[required], select[required]');
     let isValid = true;
@@ -122,30 +216,15 @@ const validateForm = (form) => {
         if (!input.value) {
             isValid = false;
             input.style.borderColor = '#e74c3c';
+            input.setAttribute('aria-invalid', 'true');
         } else {
             input.style.borderColor = '';
+            input.setAttribute('aria-invalid', 'false');
         }
     });
     
     return isValid;
 };
-
-// Date input defaults
-document.addEventListener('DOMContentLoaded', () => {
-    const dateInputs = document.querySelectorAll('.input-date');
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    if (dateInputs[0]) {
-        dateInputs[0].valueAsDate = today;
-        dateInputs[0].min = today.toISOString().split('T')[0];
-    }
-    if (dateInputs[1]) {
-        dateInputs[1].valueAsDate = tomorrow;
-        dateInputs[1].min = tomorrow.toISOString().split('T')[0];
-    }
-});
 
 // Price tracking
 const trackPrice = (route, price) => {
@@ -162,20 +241,13 @@ const saveRecentSearch = (search) => {
     localStorage.setItem('recentSearches', JSON.stringify(recent));
 };
 
-// Loading animation
-const showLoading = (element) => {
-    element.innerHTML = '<div class="loading-skeleton"></div>';
-};
-
-const hideLoading = (element, content) => {
-    element.innerHTML = content;
-};
-
 // Toast notifications
 const showToast = (message, type = 'success') => {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'polite');
     toast.style.cssText = `
         position: fixed;
         bottom: 2rem;
@@ -187,6 +259,7 @@ const showToast = (message, type = 'success') => {
         font-weight: 600;
         z-index: 10000;
         animation: slideIn 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     `;
     
     document.body.appendChild(toast);
@@ -197,12 +270,47 @@ const showToast = (message, type = 'success') => {
     }, 3000);
 };
 
+// Add animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
 // Export functionality
 window.VeloxApp = {
     trackPrice,
     saveRecentSearch,
-    showLoading,
-    hideLoading,
     showToast,
     validateForm
 };
+
+// Service Worker Registration (for PWA support)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        // Only register if service-worker.js exists
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {
+            // Silently fail if no service worker
+        });
+    });
+}
+    
