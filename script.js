@@ -1,51 +1,131 @@
 // ============================================
 // VELOX FLIGHT BOOKING - MAIN JAVASCRIPT
-// Version: 2.0 - Production Ready
+// Version: 3.0 - With Live Airport API (10,000+ Airports)
 // ============================================
 
-// Airport database for autocomplete (40 major airports)
-const airports = [
-    { code: 'JFK', name: 'New York', full: 'John F. Kennedy International Airport' },
-    { code: 'LAX', name: 'Los Angeles', full: 'Los Angeles International Airport' },
-    { code: 'LHR', name: 'London', full: 'London Heathrow Airport' },
-    { code: 'CDG', name: 'Paris', full: 'Charles de Gaulle Airport' },
-    { code: 'NRT', name: 'Tokyo', full: 'Narita International Airport' },
-    { code: 'HND', name: 'Tokyo', full: 'Haneda Airport' },
-    { code: 'SFO', name: 'San Francisco', full: 'San Francisco International Airport' },
-    { code: 'MIA', name: 'Miami', full: 'Miami International Airport' },
-    { code: 'BCN', name: 'Barcelona', full: 'Barcelona El Prat Airport' },
-    { code: 'MXP', name: 'Milan', full: 'Milan Malpensa Airport' },
-    { code: 'ORD', name: 'Chicago', full: "O'Hare International Airport" },
-    { code: 'DXB', name: 'Dubai', full: 'Dubai International Airport' },
-    { code: 'SYD', name: 'Sydney', full: 'Sydney Kingsford Smith Airport' },
-    { code: 'SIN', name: 'Singapore', full: 'Singapore Changi Airport' },
-    { code: 'FRA', name: 'Frankfurt', full: 'Frankfurt Airport' },
-    { code: 'AMS', name: 'Amsterdam', full: 'Amsterdam Schiphol Airport' },
-    { code: 'MAD', name: 'Madrid', full: 'Adolfo Suárez Madrid–Barajas Airport' },
-    { code: 'FCO', name: 'Rome', full: 'Leonardo da Vinci–Fiumicino Airport' },
-    { code: 'IST', name: 'Istanbul', full: 'Istanbul Airport' },
-    { code: 'DEL', name: 'New Delhi', full: 'Indira Gandhi International Airport' },
-    { code: 'BOM', name: 'Mumbai', full: 'Chhatrapati Shivaji Maharaj International Airport' },
-    { code: 'PEK', name: 'Beijing', full: 'Beijing Capital International Airport' },
-    { code: 'PVG', name: 'Shanghai', full: 'Shanghai Pudong International Airport' },
-    { code: 'ICN', name: 'Seoul', full: 'Incheon International Airport' },
-    { code: 'BKK', name: 'Bangkok', full: 'Suvarnabhumi Airport' },
-    { code: 'HKG', name: 'Hong Kong', full: 'Hong Kong International Airport' },
-    { code: 'SVO', name: 'Moscow', full: 'Sheremetyevo International Airport' },
-    { code: 'GRU', name: 'São Paulo', full: 'São Paulo/Guarulhos International Airport' },
-    { code: 'MEX', name: 'Mexico City', full: 'Mexico City International Airport' },
-    { code: 'YYZ', name: 'Toronto', full: 'Toronto Pearson International Airport' },
-    { code: 'ATL', name: 'Atlanta', full: 'Hartsfield-Jackson Atlanta International Airport' },
-    { code: 'DFW', name: 'Dallas', full: 'Dallas/Fort Worth International Airport' },
-    { code: 'DEN', name: 'Denver', full: 'Denver International Airport' },
-    { code: 'SEA', name: 'Seattle', full: 'Seattle-Tacoma International Airport' },
-    { code: 'LAS', name: 'Las Vegas', full: 'Harry Reid International Airport' },
-    { code: 'BOS', name: 'Boston', full: 'Logan International Airport' },
-    { code: 'EWR', name: 'Newark', full: 'Newark Liberty International Airport' },
-    { code: 'IAD', name: 'Washington', full: 'Washington Dulles International Airport' },
-    { code: 'CLT', name: 'Charlotte', full: 'Charlotte Douglas International Airport' },
-    { code: 'PHX', name: 'Phoenix', full: 'Phoenix Sky Harbor International Airport' }
-];
+// Global airport database
+let airports = [];
+
+// ============================================
+// AIRPORT DATA LOADER FROM API
+// ============================================
+
+async function loadAirportsFromAPI() {
+    const CACHE_KEY = 'velox_airports';
+    const CACHE_TIMESTAMP_KEY = 'velox_airports_timestamp';
+    const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+    
+    try {
+        // Check if we have cached data
+        const cached = localStorage.getItem(CACHE_KEY);
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+        
+        if (cached && timestamp && (Date.now() - parseInt(timestamp)) < CACHE_DURATION) {
+            console.log('📦 Loading airports from cache...');
+            airports = JSON.parse(cached);
+            console.log(`✅ Loaded ${airports.length} airports from cache`);
+            return airports;
+        }
+        
+        // Fetch fresh data from OpenFlights
+        console.log('🌐 Fetching airport data from OpenFlights API...');
+        const response = await fetch('https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat');
+        const csvData = await response.text();
+        
+        // Parse CSV data
+        const lines = csvData.split('\n');
+        const parsedAirports = [];
+        
+        for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            // CSV format: ID,"Name","City","Country","IATA","ICAO",Lat,Lon,Alt,Timezone,DST,Tz
+            // Split carefully to handle quoted commas
+            const parts = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    parts.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            parts.push(current.trim()); // Add last part
+            
+            if (parts.length < 6) continue;
+            
+            const iataCode = parts[4].replace(/"/g, '').trim();
+            
+            // Only include airports with valid 3-letter IATA codes
+            if (iataCode && iataCode !== '\\N' && iataCode.length === 3) {
+                parsedAirports.push({
+                    code: iataCode,
+                    name: parts[2].replace(/"/g, '').trim(),
+                    country: parts[3].replace(/"/g, '').trim(),
+                    full: parts[1].replace(/"/g, '').trim()
+                });
+            }
+        }
+        
+        airports = parsedAirports;
+        
+        // Cache the data
+        localStorage.setItem(CACHE_KEY, JSON.stringify(airports));
+        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+        
+        console.log(`✅ Loaded and cached ${airports.length} airports from API`);
+        return airports;
+        
+    } catch (error) {
+        console.error('❌ Error loading airports from API:', error);
+        
+        // Fallback to cached data if available
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            console.log('⚠️ Using cached data as fallback');
+            airports = JSON.parse(cached);
+            return airports;
+        }
+        
+        // Ultimate fallback to minimal airport list
+        console.log('⚠️ Using minimal fallback airport list');
+        airports = getFallbackAirports();
+        return airports;
+    }
+}
+
+// Minimal fallback airports (top 20) in case API fails
+function getFallbackAirports() {
+    return [
+        { code: 'JFK', name: 'New York', full: 'John F. Kennedy International' },
+        { code: 'LAX', name: 'Los Angeles', full: 'Los Angeles International' },
+        { code: 'LHR', name: 'London', full: 'London Heathrow' },
+        { code: 'CDG', name: 'Paris', full: 'Charles de Gaulle' },
+        { code: 'DXB', name: 'Dubai', full: 'Dubai International' },
+        { code: 'SIN', name: 'Singapore', full: 'Singapore Changi' },
+        { code: 'HKG', name: 'Hong Kong', full: 'Hong Kong International' },
+        { code: 'NRT', name: 'Tokyo', full: 'Narita International' },
+        { code: 'DEL', name: 'Delhi', full: 'Indira Gandhi International' },
+        { code: 'BOM', name: 'Mumbai', full: 'Chhatrapati Shivaji Maharaj International' },
+        { code: 'BLR', name: 'Bangalore', full: 'Kempegowda International' },
+        { code: 'SFO', name: 'San Francisco', full: 'San Francisco International' },
+        { code: 'ORD', name: 'Chicago', full: "O'Hare International" },
+        { code: 'FRA', name: 'Frankfurt', full: 'Frankfurt Airport' },
+        { code: 'AMS', name: 'Amsterdam', full: 'Amsterdam Schiphol' },
+        { code: 'MAD', name: 'Madrid', full: 'Madrid-Barajas' },
+        { code: 'BCN', name: 'Barcelona', full: 'Barcelona El Prat' },
+        { code: 'FCO', name: 'Rome', full: 'Leonardo da Vinci-Fiumicino' },
+        { code: 'MXP', name: 'Milan', full: 'Milan Malpensa' },
+        { code: 'SYD', name: 'Sydney', full: 'Sydney Kingsford Smith' }
+    ];
+}
 
 // ============================================
 // AUTOCOMPLETE FUNCTIONALITY
@@ -59,49 +139,78 @@ function createAutocomplete(input) {
     input.parentElement.style.position = 'relative';
     input.parentElement.appendChild(dropdown);
     
+    let searchTimeout;
+    
     input.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
+        
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
         
         if (query.length < 1) {
             dropdown.style.display = 'none';
             return;
         }
         
-        const matches = airports.filter(airport => 
-            airport.code.toLowerCase().includes(query) ||
-            airport.name.toLowerCase().includes(query) ||
-            airport.full.toLowerCase().includes(query)
-        ).slice(0, 8);
-        
-        if (matches.length === 0) {
-            dropdown.innerHTML = `
-                <div style="padding: 1rem; color: var(--text-secondary); text-align: center;">
-                    No airports found
+        // Debounce search for better performance
+        searchTimeout = setTimeout(() => {
+            // Search through airport database
+            const matches = airports.filter(airport => 
+                airport.code.toLowerCase().includes(query) ||
+                airport.name.toLowerCase().includes(query) ||
+                airport.full.toLowerCase().includes(query) ||
+                airport.country.toLowerCase().includes(query)
+            ).slice(0, 10); // Show top 10 matches
+            
+            if (matches.length === 0) {
+                dropdown.innerHTML = `
+                    <div style="padding: 1rem; color: #8a99b3; text-align: center;">
+                        No airports found for "${query}"
+                    </div>
+                `;
+                dropdown.style.display = 'block';
+                return;
+            }
+            
+            dropdown.innerHTML = matches.map(airport => `
+                <div class="autocomplete-item" 
+                     data-code="${airport.code}" 
+                     data-name="${airport.name}"
+                     role="option"
+                     tabindex="0">
+                    <div style="font-weight: 600; color: #c5ff68;">${airport.code} - ${airport.name}</div>
+                    <div style="font-size: 0.85rem; color: #8a99b3;">${airport.full}, ${airport.country}</div>
                 </div>
-            `;
+            `).join('');
+            
             dropdown.style.display = 'block';
-            return;
-        }
-        
-        dropdown.innerHTML = matches.map(airport => `
-            <div class="autocomplete-item" 
-                 data-code="${airport.code}" 
-                 data-name="${airport.name}">
-                <div style="font-weight: 600; color: var(--accent-green);">${airport.code}</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">${airport.name} - ${airport.full}</div>
-            </div>
-        `).join('');
-        
-        dropdown.style.display = 'block';
-        
-        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const code = this.dataset.code;
-                const name = this.dataset.name;
-                input.value = `${code} - ${name}`;
-                dropdown.style.display = 'none';
+            
+            // Add click handlers
+            dropdown.querySelectorAll('.autocomplete-item').forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    const code = this.dataset.code;
+                    const name = this.dataset.name;
+                    input.value = `${code} - ${name}`;
+                    dropdown.style.display = 'none';
+                });
+                
+                // Keyboard navigation within dropdown
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        this.click();
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const next = this.nextElementSibling;
+                        if (next) next.focus();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prev = this.previousElementSibling;
+                        if (prev) prev.focus();
+                        else input.focus();
+                    }
+                });
             });
-        });
+        }, 200); // 200ms debounce
     });
     
     // Close dropdown when clicking outside
@@ -111,10 +220,14 @@ function createAutocomplete(input) {
         }
     });
     
-    // Keyboard navigation for dropdown
+    // Keyboard controls
     input.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             dropdown.style.display = 'none';
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const firstItem = dropdown.querySelector('.autocomplete-item');
+            if (firstItem) firstItem.focus();
         }
     });
 }
@@ -125,7 +238,6 @@ function createAutocomplete(input) {
 
 const showToast = (message, type = 'success') => {
     const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
     toast.textContent = message;
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'polite');
@@ -141,10 +253,10 @@ const showToast = (message, type = 'success') => {
         z-index: 10000;
         animation: slideIn 0.3s ease;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        font-family: 'Outfit', sans-serif;
     `;
     
     document.body.appendChild(toast);
-    
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
@@ -152,15 +264,37 @@ const showToast = (message, type = 'success') => {
 };
 
 // ============================================
-// INITIALIZATION ON PAGE LOAD
+// INITIALIZATION
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Velox initialized');
+document.addEventListener('DOMContentLoaded', async () => {
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'airport-loading';
+    loadingIndicator.style.cssText = `
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: #1e2836;
+        color: #8a99b3;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        z-index: 9999;
+        border: 1px solid #2a3644;
+    `;
+    loadingIndicator.textContent = '⏳ Loading airport database...';
+    document.body.appendChild(loadingIndicator);
     
-    // Initialize autocomplete for airport inputs
-    const airportInputs = document.querySelectorAll('.input-airport');
-    airportInputs.forEach(input => createAutocomplete(input));
+    // Load airports from API
+    await loadAirportsFromAPI();
+    
+    // Remove loading indicator
+    loadingIndicator.textContent = `✅ ${airports.length} airports ready`;
+    setTimeout(() => loadingIndicator.remove(), 2000);
+    
+    // Initialize autocomplete
+    document.querySelectorAll('.input-airport').forEach(input => createAutocomplete(input));
     
     // Set default dates
     const dateInputs = document.querySelectorAll('.input-date');
@@ -192,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const passengers = document.getElementById('input-passengers')?.value || '2';
             const cabinClass = document.getElementById('input-class')?.value || 'business';
             
-            // Validate
             if (!fromInput?.value || !toInput?.value) {
                 showToast('Please enter both origin and destination airports', 'error');
                 return;
@@ -203,13 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Save to recent searches
-            saveRecentSearch({
-                from, to, departure, returnDate, passengers, cabinClass,
-                timestamp: new Date().toISOString()
-            });
+            saveRecentSearch({ from, to, departure, returnDate, passengers, cabinClass });
             
-            // Navigate to search page
             const params = new URLSearchParams({
                 from, to, departure,
                 return: returnDate || '',
@@ -221,15 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Animate feature cards on scroll
-    const featureCards = document.querySelectorAll('.feature-card, .route-card');
-    featureCards.forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'all 0.6s ease';
+    // Animate elements on scroll
+    const elements = document.querySelectorAll('.feature-card, .route-card');
+    elements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease';
     });
     
-    // Intersection Observer for scroll animations
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -238,9 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -100px 0px' });
+    }, { threshold: 0.1 });
     
-    featureCards.forEach(card => observer.observe(card));
+    elements.forEach(el => observer.observe(el));
 });
 
 // ============================================
@@ -249,30 +376,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-        // Remove active from all tabs
         document.querySelectorAll('.tab-btn').forEach(b => {
             b.classList.remove('active');
             b.setAttribute('aria-selected', 'false');
         });
         
-        // Add active to clicked tab
         this.classList.add('active');
         this.setAttribute('aria-selected', 'true');
         
-        // Handle return date visibility for one-way
         const returnGroup = document.querySelectorAll('.form-group')[2];
-        if (returnGroup && returnGroup.querySelector('#input-return')) {
-            if (this.dataset.tab === 'oneway') {
-                returnGroup.style.display = 'none';
-            } else {
-                returnGroup.style.display = 'flex';
-            }
+        if (returnGroup && this.dataset.tab === 'oneway') {
+            returnGroup.style.display = 'none';
+        } else if (returnGroup) {
+            returnGroup.style.display = 'flex';
         }
     });
 });
 
 // ============================================
-// AIRPORT SWAP BUTTON
+// AIRPORT SWAP
 // ============================================
 
 document.querySelectorAll('.swap-btn').forEach(btn => {
@@ -283,17 +405,13 @@ document.querySelectorAll('.swap-btn').forEach(btn => {
         const toInput = document.getElementById('input-to');
         
         if (fromInput && toInput) {
-            // Swap values
             const temp = fromInput.value;
             fromInput.value = toInput.value;
             toInput.value = temp;
             
-            // Add rotation animation
             this.style.transition = 'transform 0.3s ease';
             this.style.transform = 'rotate(180deg)';
-            setTimeout(() => {
-                this.style.transform = 'rotate(0deg)';
-            }, 300);
+            setTimeout(() => this.style.transform = 'rotate(0deg)', 300);
         }
     });
 });
@@ -302,13 +420,13 @@ document.querySelectorAll('.swap-btn').forEach(btn => {
 // MOBILE MENU
 // ============================================
 
-const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+const mobileToggle = document.querySelector('.mobile-menu-toggle');
 const nav = document.querySelector('.nav');
 
-if (mobileMenuToggle && nav) {
-    mobileMenuToggle.addEventListener('click', () => {
-        const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
-        mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
+if (mobileToggle && nav) {
+    mobileToggle.addEventListener('click', () => {
+        const isExpanded = mobileToggle.getAttribute('aria-expanded') === 'true';
+        mobileToggle.setAttribute('aria-expanded', !isExpanded);
         nav.classList.toggle('active');
     });
 }
@@ -319,10 +437,10 @@ if (mobileMenuToggle && nav) {
 
 document.querySelectorAll('.route-card').forEach(card => {
     const clickHandler = () => {
-        const cityCodes = card.querySelectorAll('.city-code');
-        if (cityCodes.length >= 2) {
-            const from = cityCodes[0].textContent.trim();
-            const to = cityCodes[1].textContent.trim();
+        const codes = card.querySelectorAll('.city-code');
+        if (codes.length >= 2) {
+            const from = codes[0].textContent.trim();
+            const to = codes[1].textContent.trim();
             window.location.href = `search.html?from=${from}&to=${to}`;
         }
     };
@@ -342,18 +460,16 @@ document.querySelectorAll('.route-card').forEach(card => {
 
 document.querySelectorAll('.btn-cta').forEach(btn => {
     btn.addEventListener('click', () => {
-        const searchWidget = document.querySelector('.search-widget');
-        if (searchWidget) {
-            searchWidget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => {
-                document.getElementById('input-from')?.focus();
-            }, 500);
+        const widget = document.querySelector('.search-widget');
+        if (widget) {
+            widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => document.getElementById('input-from')?.focus(), 500);
         }
     });
 });
 
 // ============================================
-// SMOOTH SCROLL FOR ANCHOR LINKS
+// SMOOTH SCROLL
 // ============================================
 
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -375,11 +491,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // UTILITY FUNCTIONS
 // ============================================
 
-// Form validation
 const validateForm = (form) => {
     const inputs = form.querySelectorAll('input[required], select[required]');
     let isValid = true;
-    
     inputs.forEach(input => {
         if (!input.value) {
             isValid = false;
@@ -390,11 +504,9 @@ const validateForm = (form) => {
             input.setAttribute('aria-invalid', 'false');
         }
     });
-    
     return isValid;
 };
 
-// Price tracking
 const trackPrice = (route, price) => {
     try {
         const tracked = JSON.parse(localStorage.getItem('trackedPrices') || '[]');
@@ -405,7 +517,6 @@ const trackPrice = (route, price) => {
     }
 };
 
-// Recent searches
 const saveRecentSearch = (search) => {
     try {
         const recent = JSON.parse(localStorage.getItem('recentSearches') || '[]');
@@ -417,46 +528,26 @@ const saveRecentSearch = (search) => {
     }
 };
 
-// Animated counter
-const animateCounter = (element, target, duration = 2000) => {
-    let start = 0;
-    const increment = target / (duration / 16);
-    const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-            element.textContent = target.toLocaleString();
-            clearInterval(timer);
-        } else {
-            element.textContent = Math.floor(start).toLocaleString();
-        }
-    }, 16);
+// Clear airport cache (useful for debugging/updates)
+const clearAirportCache = () => {
+    localStorage.removeItem('velox_airports');
+    localStorage.removeItem('velox_airports_timestamp');
+    console.log('✅ Airport cache cleared. Reload page to fetch fresh data.');
 };
 
 // ============================================
-// TOAST ANIMATION STYLES
+// TOAST ANIMATIONS
 // ============================================
 
 const toastStyles = document.createElement('style');
 toastStyles.textContent = `
     @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
     @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
     }
 `;
 document.head.appendChild(toastStyles);
@@ -466,24 +557,13 @@ document.head.appendChild(toastStyles);
 // ============================================
 
 window.VeloxApp = {
-    airports,
+    airports: () => airports, // Function to get current airport list
     trackPrice,
     saveRecentSearch,
     showToast,
     validateForm,
-    animateCounter
+    clearAirportCache,
+    reloadAirports: loadAirportsFromAPI
 };
 
-// ============================================
-// SERVICE WORKER (PWA SUPPORT)
-// ============================================
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').catch(() => {
-            // Silently fail if no service worker
-        });
-    });
-}
-
-console.log('✅ Velox ready - All systems operational');
+console.log('✅ Velox script loaded - Airport database will load on page ready');
