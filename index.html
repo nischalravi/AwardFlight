@@ -3,61 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Find and book the best flight deals with Award Flights. Compare 500+ airlines, use points and miles, track prices, and save on every booking.">
-    <meta name="keywords" content="flight booking, cheap flights, airline tickets, award flights, travel deals, flight search">
+    <meta name="description" content="Book award flights for 50-90% fewer points. Search 100+ airlines and find the best deals using your credit card points and airline miles.">
+    <meta name="keywords" content="award flights, credit card points, airline miles, travel rewards, business class deals">
     <meta name="author" content="Award Flights">
     <meta name="theme-color" content="#0a0f1e">
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://award-flight.vercel.app/">
-    <meta property="og:title" content="Award Flights - Smart Flight Booking Platform">
-    <meta property="og:description" content="Compare 500+ airlines and find award flights using your points. Save money on every booking.">
+    <meta property="og:title" content="Award Flights - Book Flights for 50-90% Fewer Points">
+    <meta property="og:description" content="Search 100+ airlines. Save 50-90% on award flights. Business class for economy prices.">
     <meta property="og:image" content="https://award-flight.vercel.app/og-image.jpg">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://award-flight.vercel.app/">
-    <meta name="twitter:title" content="Award Flights - Smart Flight Booking">
-    <meta name="twitter:description" content="Find the best flight deals across 500+ airlines">
-    <meta name="twitter:image" content="https://award-flight.vercel.app/og-image.jpg">
+    <meta name="twitter:title" content="Award Flights - Save 50-90% on Award Travel">
+    <meta name="twitter:description" content="Find the best award flight deals across 100+ airlines">
     
-    <title>Award Flights - Smart Flight Booking | Compare 500+ Airlines</title>
+    <title>Award Flights - Book Flights for 50-90% Fewer Points | 100+ Airlines</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
     
-    <!-- Preconnect for performance -->
+    <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="./styles.css">
-    
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Award Flights",
-        "url": "https://award-flight.vercel.app/",
-        "description": "Smart flight booking platform to compare 500+ airlines and find award flights",
-        "applicationCategory": "TravelApplication",
-        "operatingSystem": "Any",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-        }
-    }
-    </script>
+    <link rel="stylesheet" href="./enhancements.css">
 </head>
 <body>
-    <!-- Skip to main content for accessibility -->
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress"></div>
+    
+    <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Header -->
@@ -70,15 +53,15 @@
             <nav class="nav" role="navigation" aria-label="Main navigation">
                 <a href="index.html" class="active" aria-current="page">Home</a>
                 <a href="search.html">Search Flights</a>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="sitemap.html">Site Guide</a>
-                <a href="#features">Features</a>
+                <a href="calculator.html">Points Calculator</a>
+                <a href="deals.html">Hot Deals</a>
+                <a href="#success-stories">Success Stories</a>
             </nav>
             <div class="header-actions">
-                <button class="btn-secondary" aria-label="Sign in to your account">Sign In</button>
-                <button class="btn-primary" aria-label="Create new account">Sign Up</button>
+                <button class="btn-secondary" aria-label="Sign in">Sign In</button>
+                <button class="btn-primary" aria-label="Sign up">Sign Up</button>
             </div>
-            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">
+            <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -88,49 +71,74 @@
 
     <!-- Hero Section -->
     <main id="main-content">
-        <section class="hero" aria-labelledby="hero-title">
-            <div class="hero-bg" aria-hidden="true"></div>
+        <section class="hero-enhanced">
+            <div class="hero-bg"></div>
             <div class="container">
                 <div class="hero-content">
-                    <h1 id="hero-title" class="hero-title">
-                        Find Your Perfect Flight
-                        <span class="gradient-text">At The Best Price</span>
+                    <!-- Social Proof -->
+                    <div class="social-proof-badge">
+                        ⭐⭐⭐⭐⭐ Trusted by 50,000+ travelers worldwide
+                    </div>
+                    
+                    <h1 class="hero-title-enhanced">
+                        Book Award Flights for
+                        <span class="gradient-text-large">50-90% Fewer Points</span>
                     </h1>
-                    <p class="hero-subtitle">Search across 500+ airlines and find award flights using your points. Compare prices, cabin classes, and book with confidence.</p>
+                    
+                    <p class="hero-subtitle-enhanced">
+                        Search 100+ airlines in seconds. Find business class flights for economy points. 
+                        Compare 30+ loyalty programs instantly.
+                    </p>
+                    
+                    <!-- Savings Visual Example -->
+                    <div class="savings-example">
+                        <div class="price-old">
+                            <span class="label">Credit Card Portal</span>
+                            <span class="amount">200,000 pts</span>
+                        </div>
+                        <div class="vs-arrow">→</div>
+                        <div class="price-new">
+                            <span class="label">Award Flights</span>
+                            <span class="amount">55,000 pts</span>
+                        </div>
+                        <div class="savings-badge-hero">
+                            💰 Save 72%!
+                        </div>
+                    </div>
                     
                     <!-- Search Widget -->
-                    <div class="search-widget" role="search">
-                        <div class="search-tabs" role="tablist" aria-label="Trip type selection">
-                            <button class="tab-btn active" role="tab" data-tab="roundtrip" aria-selected="true" aria-controls="search-form">Round Trip</button>
-                            <button class="tab-btn" role="tab" data-tab="oneway" aria-selected="false" aria-controls="search-form">One Way</button>
-                            <button class="tab-btn" role="tab" data-tab="multi" aria-selected="false" aria-controls="search-form">Multi-City</button>
+                    <div class="search-widget">
+                        <div class="search-tabs">
+                            <button class="tab-btn active" data-tab="roundtrip">Round Trip</button>
+                            <button class="tab-btn" data-tab="oneway">One Way</button>
+                            <button class="tab-btn" data-tab="multi">Multi-City</button>
                         </div>
                         
-                        <form class="search-form" id="search-form" role="tabpanel" aria-label="Flight search form">
+                        <form class="search-form" id="search-form">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="input-from">From</label>
-                                    <input type="text" id="input-from" placeholder="JFK - New York" class="input-airport" required aria-required="true" autocomplete="off">
+                                    <input type="text" id="input-from" placeholder="JFK - New York" class="input-airport" required autocomplete="off">
                                 </div>
-                                <button type="button" class="swap-btn" aria-label="Swap origin and destination">⇄</button>
+                                <button type="button" class="swap-btn" aria-label="Swap airports">⇄</button>
                                 <div class="form-group">
                                     <label for="input-to">To</label>
-                                    <input type="text" id="input-to" placeholder="MXP - Milan" class="input-airport" required aria-required="true" autocomplete="off">
+                                    <input type="text" id="input-to" placeholder="MXP - Milan" class="input-airport" required autocomplete="off">
                                 </div>
                             </div>
                             
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="input-departure">Departure</label>
-                                    <input type="date" id="input-departure" class="input-date" required aria-required="true">
+                                    <input type="date" id="input-departure" class="input-date" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="input-return">Return</label>
-                                    <input type="date" id="input-return" class="input-date" required aria-required="true">
+                                    <input type="date" id="input-return" class="input-date" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="input-passengers">Passengers</label>
-                                    <select id="input-passengers" class="input-select" aria-label="Select number of passengers">
+                                    <select id="input-passengers" class="input-select">
                                         <option value="1" selected>1 Passenger</option>
                                         <option value="2">2 Passengers</option>
                                         <option value="3">3 Passengers</option>
@@ -139,7 +147,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="input-class">Class</label>
-                                    <select id="input-class" class="input-select" aria-label="Select cabin class">
+                                    <select id="input-class" class="input-select">
                                         <option value="economy">Economy</option>
                                         <option value="premium">Premium Economy</option>
                                         <option value="business" selected>Business</option>
@@ -148,9 +156,9 @@
                                 </div>
                             </div>
                             
-                            <button type="submit" class="btn-search" aria-label="Search for flights">
-                                <span>Search Flights</span>
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <button type="submit" class="btn-search">
+                                <span>Search 100+ Airlines</span>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                     <path d="M9 17L15 11L9 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
                             </button>
@@ -160,161 +168,367 @@
             </div>
         </section>
 
-        <!-- Features Section -->
-        <section id="features" class="features" aria-labelledby="features-title">
+        <!-- Value Props Section -->
+        <section class="value-props-section">
             <div class="container">
-                <h2 id="features-title" class="section-title">Why Choose Award Flights?</h2>
-                <div class="features-grid">
-                    <article class="feature-card">
-                        <div class="feature-icon" role="img" aria-label="Search icon">🔍</div>
-                        <h3>Smart Search</h3>
-                        <p>Compare prices across 500+ airlines and travel sites in seconds</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" role="img" aria-label="Diamond icon">💎</div>
-                        <h3>Award Flights</h3>
-                        <p>Find the best deals using your airline miles and credit card points</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" role="img" aria-label="Chart icon">📊</div>
-                        <h3>Price Tracking</h3>
-                        <p>Get alerts when prices drop for your favorite routes</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" role="img" aria-label="Target icon">🎯</div>
-                        <h3>Flexible Dates</h3>
-                        <p>See prices across multiple dates to find the cheapest option</p>
-                    </article>
+                <div class="value-props-grid">
+                    <div class="value-prop-card">
+                        <div class="value-number">50-90%</div>
+                        <div class="value-label">Fewer Points</div>
+                        <p>Than credit card portals</p>
+                    </div>
+                    <div class="value-prop-card">
+                        <div class="value-number">100+</div>
+                        <div class="value-label">Airlines</div>
+                        <p>Searched instantly</p>
+                    </div>
+                    <div class="value-prop-card">
+                        <div class="value-number">30+</div>
+                        <div class="value-label">Programs</div>
+                        <p>Loyalty programs</p>
+                    </div>
+                    <div class="value-prop-card">
+                        <div class="value-number">$15M+</div>
+                        <div class="value-label">Saved</div>
+                        <p>By our members</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Popular Routes -->
-        <section class="popular-routes" aria-labelledby="routes-title">
+        <!-- How It Works -->
+        <section class="how-it-works">
             <div class="container">
-                <div class="section-header">
-                    <h2 id="routes-title" class="section-title">Popular Routes</h2>
-                    <a href="search.html" class="link-view-all">View All →</a>
+                <h2 class="section-title">Why Choose Award Flights?</h2>
+                <div class="features-grid-enhanced">
+                    <div class="feature-card-enhanced">
+                        <div class="feature-icon-large">🔍</div>
+                        <h3>Search 100+ Airlines in One Click</h3>
+                        <p>Skip the portals. Find award flights across more airlines and programs than anywhere else. We search every partner airline to find hidden availability.</p>
+                    </div>
+                    <div class="feature-card-enhanced">
+                        <div class="feature-icon-large">💎</div>
+                        <h3>Save 50%-90% of Your Points</h3>
+                        <p>Unlock hidden partner fares and transfer deals. Get business class for the cost of economy. We show you the smartest way to use your points.</p>
+                    </div>
+                    <div class="feature-card-enhanced">
+                        <div class="feature-icon-large">⚡</div>
+                        <h3>See Live Availability, Every Time</h3>
+                        <p>Our real-time search engine shows seats that airlines don't advertise. No more phantom availability or outdated results.</p>
+                    </div>
+                    <div class="feature-card-enhanced">
+                        <div class="feature-icon-large">✅</div>
+                        <h3>Confidence Built In</h3>
+                        <p>We don't just show deals, we guide you with step-by-step transfer instructions so you can book with complete confidence.</p>
+                    </div>
                 </div>
-                <div class="routes-grid">
-                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from New York JFK to London Heathrow starting at $345">
-                        <div class="route-info">
-                            <div class="route-cities">
-                                <span class="city-code">JFK</span>
-                                <span class="route-arrow" aria-hidden="true">→</span>
-                                <span class="city-code">LHR</span>
+            </div>
+        </section>
+
+        <!-- Success Stories -->
+        <section id="success-stories" class="success-stories">
+            <div class="container">
+                <h2 class="section-title">Real Travelers, Real Savings, Real Trips</h2>
+                <p class="section-subtitle">See how travelers like you are booking dream vacations for fewer points</p>
+                
+                <div class="stories-grid">
+                    <!-- Story 1 -->
+                    <div class="story-card">
+                        <div class="story-image" style="background: linear-gradient(135deg, rgba(197, 255, 104, 0.3), rgba(74, 156, 255, 0.3)), url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800') center/cover;">
+                            <div class="points-badge">10,000 PTS</div>
+                        </div>
+                        <div class="story-content">
+                            <h3>Zak's Caribbean Getaway</h3>
+                            <p>Zak had only earned a handful of points and wasn't sure how to use them. He found round-trip economy flights to the Bahamas for just 10,000 points per person.</p>
+                            <div class="transfer-info">
+                                <span class="transfer-from">Chase UR</span>
+                                <span class="transfer-arrow">→</span>
+                                <span class="transfer-to">British Airways</span>
                             </div>
-                            <div class="route-names">New York to London</div>
                         </div>
-                        <div class="route-price">
-                            <span class="price-from">from</span>
-                            <span class="price-amount">$345</span>
+                    </div>
+
+                    <!-- Story 2 -->
+                    <div class="story-card">
+                        <div class="story-image" style="background: linear-gradient(135deg, rgba(197, 255, 104, 0.3), rgba(74, 156, 255, 0.3)), url('https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=800') center/cover;">
+                            <div class="points-badge">40,000 PTS</div>
                         </div>
-                    </article>
+                        <div class="story-content">
+                            <h3>Marisa's Moroccan Adventure</h3>
+                            <p>Marisa planned the perfect girl's trip to Morocco, starting with easy economy flights for 40,000 points round-trip.</p>
+                            <div class="transfer-info">
+                                <span class="transfer-from">Amex MR</span>
+                                <span class="transfer-arrow">→</span>
+                                <span class="transfer-to">Etihad Guest</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Story 3 -->
+                    <div class="story-card">
+                        <div class="story-image" style="background: linear-gradient(135deg, rgba(197, 255, 104, 0.3), rgba(74, 156, 255, 0.3)), url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800') center/cover;">
+                            <div class="points-badge">80,000 PTS</div>
+                        </div>
+                        <div class="story-content">
+                            <h3>Tara's European Honeymoon</h3>
+                            <p>By utilizing a transfer bonus, Tara flew to Paris and returned from Rome in stylish flat-bed business class seats for just 80,000 points per person.</p>
+                            <div class="transfer-info">
+                                <span class="transfer-from">Citi TYP</span>
+                                <span class="transfer-arrow">→</span>
+                                <span class="transfer-to">Flying Blue</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Story 4 -->
+                    <div class="story-card">
+                        <div class="story-image" style="background: linear-gradient(135deg, rgba(197, 255, 104, 0.3), rgba(74, 156, 255, 0.3)), url('https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800') center/cover;">
+                            <div class="points-badge">140,000 PTS</div>
+                        </div>
+                        <div class="story-content">
+                            <h3>Daniel's Luxury Safari</h3>
+                            <p>Daniel flew Cathay Pacific first class round-trip to Johannesburg via Hong Kong with caviar and champagne for only 140,000 points each.</p>
+                            <div class="transfer-info">
+                                <span class="transfer-from">Amex MR</span>
+                                <span class="transfer-arrow">→</span>
+                                <span class="transfer-to">Cathay Pacific</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hot Deals Section -->
+        <section class="hot-deals">
+            <div class="container">
+                <h2 class="section-title">🔥 Featured Deals This Week</h2>
+                <p class="section-subtitle">Premium routes at economy prices</p>
+                
+                <div class="deals-grid">
+                    <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=1200') center/cover;">
+                        <div class="deal-content">
+                            <h3>New York to Paris</h3>
+                            <div class="deal-route">JFK → CDG</div>
+                            <div class="deal-price">
+                                <span class="from">from</span>
+                                <span class="points">50,000</span>
+                                <span class="label">points</span>
+                            </div>
+                            <div class="deal-class">Business Class</div>
+                            <button class="btn-view-deal">View Deal →</button>
+                        </div>
+                    </div>
+
+                    <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=1200') center/cover;">
+                        <div class="deal-content">
+                            <h3>Chicago to Maldives</h3>
+                            <div class="deal-route">ORD → MLE</div>
+                            <div class="deal-price">
+                                <span class="from">from</span>
+                                <span class="points">70,000</span>
+                                <span class="label">points</span>
+                            </div>
+                            <div class="deal-class">Business Class</div>
+                            <button class="btn-view-deal">View Deal →</button>
+                        </div>
+                    </div>
+
+                    <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1493780474015-ba834fd0ce2f?w=1200') center/cover;">
+                        <div class="deal-content">
+                            <h3>LA to Tokyo</h3>
+                            <div class="deal-route">LAX → NRT</div>
+                            <div class="deal-price">
+                                <span class="from">from</span>
+                                <span class="points">60,000</span>
+                                <span class="label">points</span>
+                            </div>
+                            <div class="deal-class">Business Class</div>
+                            <button class="btn-view-deal">View Deal →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Points Calculator Widget -->
+        <section class="calculator-widget-section">
+            <div class="container">
+                <div class="calculator-widget">
+                    <h2>💰 Points Value Calculator</h2>
+                    <p>See how much your points are really worth</p>
                     
-                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from Los Angeles to Tokyo starting at $520">
-                        <div class="route-info">
-                            <div class="route-cities">
-                                <span class="city-code">LAX</span>
-                                <span class="route-arrow" aria-hidden="true">→</span>
-                                <span class="city-code">NRT</span>
-                            </div>
-                            <div class="route-names">Los Angeles to Tokyo</div>
+                    <div class="calc-inputs">
+                        <div class="calc-input-group">
+                            <label>Your Points Balance</label>
+                            <input type="number" id="calc-points" placeholder="100000" value="100000">
                         </div>
-                        <div class="route-price">
-                            <span class="price-from">from</span>
-                            <span class="price-amount">$520</span>
+                        <div class="calc-input-group">
+                            <label>Points Program</label>
+                            <select id="calc-program">
+                                <option value="1.5">Chase Ultimate Rewards (1.5¢/pt)</option>
+                                <option value="1.4">Amex Membership Rewards (1.4¢/pt)</option>
+                                <option value="1.3">Citi ThankYou Points (1.3¢/pt)</option>
+                                <option value="1.2">Capital One Miles (1.2¢/pt)</option>
+                                <option value="1.0">Airline Miles (1.0¢/pt)</option>
+                            </select>
                         </div>
-                    </article>
+                    </div>
                     
-                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from San Francisco to Paris starting at $410">
-                        <div class="route-info">
-                            <div class="route-cities">
-                                <span class="city-code">SFO</span>
-                                <span class="route-arrow" aria-hidden="true">→</span>
-                                <span class="city-code">CDG</span>
-                            </div>
-                            <div class="route-names">San Francisco to Paris</div>
+                    <div class="calc-results">
+                        <div class="calc-result-box">
+                            <div class="result-label">Portal Value</div>
+                            <div class="result-value portal">$1,000</div>
+                            <div class="result-desc">Standard redemption</div>
                         </div>
-                        <div class="route-price">
-                            <span class="price-from">from</span>
-                            <span class="price-amount">$410</span>
+                        
+                        <div class="calc-vs">VS</div>
+                        
+                        <div class="calc-result-box highlight">
+                            <div class="result-label">Award Flights Value</div>
+                            <div class="result-value smart">$2,500</div>
+                            <div class="result-desc">Smart transfers</div>
                         </div>
-                    </article>
-                    
-                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from Miami to Barcelona starting at $395">
-                        <div class="route-info">
-                            <div class="route-cities">
-                                <span class="city-code">MIA</span>
-                                <span class="route-arrow" aria-hidden="true">→</span>
-                                <span class="city-code">BCN</span>
-                            </div>
-                            <div class="route-names">Miami to Barcelona</div>
+                        
+                        <div class="calc-savings">
+                            💰 You could save $1,500 (150% more value!)
                         </div>
-                        <div class="route-price">
-                            <span class="price-from">from</span>
-                            <span class="price-amount">$395</span>
-                        </div>
-                    </article>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- CTA Section -->
-        <section class="cta-section" aria-labelledby="cta-title">
+        <section class="cta-section-enhanced">
             <div class="container">
-                <div class="cta-content">
-                    <h2 id="cta-title">Ready to Start Your Journey?</h2>
-                    <p>Join thousands of travelers who save money on flights every day</p>
-                    <button class="btn-cta" aria-label="Sign up for free account">Get Started Free</button>
+                <div class="cta-content-enhanced">
+                    <h2>Ready to Save 50-90% on Your Next Flight?</h2>
+                    <p>Join 50,000+ travelers who've unlocked $15M+ in travel savings</p>
+                    <div class="cta-buttons">
+                        <button class="btn-cta-large">Start Searching Free</button>
+                        <button class="btn-secondary-large">See How It Works</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="container">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                
+                <div class="faq-accordion">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>How does Award Flights save me 50-90% on points?</span>
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Credit card portals only show their own airline partners at inflated rates. Award Flights searches 100+ airlines and 30+ loyalty programs to find partner award availability at much lower rates. For example, booking Air France through Chase's portal might cost 200,000 points, but transferring Chase points to Flying Blue and booking directly costs only 55,000 points - a 72% savings!</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>What airlines can I book using Award Flights?</span>
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We search 100+ airlines including all major carriers like United, American, Delta, Air France, British Airways, Lufthansa, Emirates, Singapore Airlines, Cathay Pacific, ANA, and many more. We also include partner airlines in alliances like Star Alliance, Oneworld, and SkyTeam.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>How do I transfer credit card points to airlines?</span>
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We provide step-by-step transfer guides for every major credit card. Typically it takes 3 steps: (1) Log into your credit card account, (2) Select "Transfer to Travel Partners", (3) Choose the airline and amount. Transfers are usually instant for most programs, though some may take 1-2 days.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>Can I try Award Flights for free?</span>
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes! You can search flights and see award availability completely free. Premium features like price alerts, portfolio tracking, and unlimited searches require a membership starting at $12/month.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            <span>How many points do I need for a free flight?</span>
+                            <span class="faq-toggle">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>It varies by route and cabin class. Domestic economy flights can be as low as 7,500 points one-way. International economy flights typically range from 30,000-60,000 points round-trip. Business class to Europe can cost 50,000-80,000 points using smart transfers (vs 200,000+ through portals).</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
-    <footer class="footer" role="contentinfo">
+    <footer class="footer-enhanced">
         <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
+            <div class="footer-grid-enhanced">
+                <div class="footer-col-main">
                     <div class="logo">
-                        <div class="logo-icon" role="img" aria-label="Airplane icon"></div>
+                        <div class="logo-icon"></div>
                         <span>Award Flights</span>
                     </div>
-                    <p>Your smart travel companion for finding the best flight deals worldwide.</p>
+                    <p>Your smart companion for booking flights with fewer points. Save 50-90% compared to credit card portals.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook">📘</a>
+                        <a href="#" aria-label="Twitter">🐦</a>
+                        <a href="#" aria-label="Instagram">📷</a>
+                    </div>
                 </div>
+                
                 <div class="footer-col">
-                    <h4>Product</h4>
+                    <h4>Products</h4>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="sitemap.html">Pricing</a></li>
-                        <li><a href="sitemap.html">API</a></li>
+                        <li><a href="search.html">Flight Search</a></li>
+                        <li><a href="calculator.html">Points Calculator</a></li>
+                        <li><a href="deals.html">Hot Deals</a></li>
+                        <li><a href="alerts.html">Price Alerts</a></li>
                     </ul>
                 </div>
+                
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="guides.html">Transfer Guides</a></li>
+                        <li><a href="#success-stories">Success Stories</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                    </ul>
+                </div>
+                
                 <div class="footer-col">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="sitemap.html">About</a></li>
-                        <li><a href="sitemap.html">Blog</a></li>
-                        <li><a href="sitemap.html">Careers</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="sitemap.html">Help Center</a></li>
-                        <li><a href="sitemap.html">Contact</a></li>
-                        <li><a href="sitemap.html">Terms</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="terms.html">Terms of Use</a></li>
                     </ul>
                 </div>
             </div>
+            
             <div class="footer-bottom">
                 <p>&copy; 2026 Award Flights. All rights reserved.</p>
+                <p class="disclaimer">Advertiser Disclosure: Some links may earn affiliate commissions. We are not affiliated with any airline or credit card company.</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <script src="./script.js" defer></script>
+    <script src="./script.js"></script>
+    <script src="./enhancements.js"></script>
 </body>
 </html>
