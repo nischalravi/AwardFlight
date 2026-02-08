@@ -109,16 +109,16 @@ body {
 .scroll-plane {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%) translateX(-50%);
     left: 0%;
+    transform: translateY(-50%) translateX(-50%);
     z-index: 10;
     transition: left 0.1s ease-out;
     pointer-events: none;
 }
 
 .scroll-plane svg {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
 }
 
