@@ -27,6 +27,19 @@ body {
     overflow-x: hidden;
 }
 
+/* Scroll Progress Indicator */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+    z-index: 10001;
+    transition: width 0.1s ease-out;
+    box-shadow: 0 0 10px rgba(197, 255, 104, 0.5);
+}
+
 /* Skip Link for Accessibility */
 .skip-link {
     position: absolute;
