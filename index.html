@@ -3,223 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Velox - Smart Flight Booking</title>
+    <meta name="description" content="Find and book the best flight deals with Velox. Compare 500+ airlines, use points and miles, track prices, and save on every booking.">
+    <meta name="keywords" content="flight booking, cheap flights, airline tickets, award flights, travel deals, flight search">
+    <meta name="author" content="Velox">
+    <meta name="theme-color" content="#0a0f1e">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://award-flight.vercel.app/">
+    <meta property="og:title" content="Velox - Smart Flight Booking Platform">
+    <meta property="og:description" content="Compare 500+ airlines and find award flights using your points. Save money on every booking.">
+    <meta property="og:image" content="https://award-flight.vercel.app/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://award-flight.vercel.app/">
+    <meta name="twitter:title" content="Velox - Smart Flight Booking">
+    <meta name="twitter:description" content="Find the best flight deals across 500+ airlines">
+    <meta name="twitter:image" content="https://award-flight.vercel.app/og-image.jpg">
+    
+    <title>Velox - Smart Flight Booking | Compare 500+ Airlines</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./styles.css">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Velox",
+        "url": "https://award-flight.vercel.app/",
+        "description": "Smart flight booking platform to compare 500+ airlines and find award flights",
+        "applicationCategory": "TravelApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
 </head>
 <body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Header -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="container-header">
-            <div class="logo">
-                <div class="logo-icon"></div>
+            <a href="index.html" class="logo" aria-label="Velox home">
+                <div class="logo-icon" role="img" aria-label="Airplane icon"></div>
                 <span>Velox</span>
-            </div>
-            <nav class="nav">
-                <a href="index.html" class="active">Home</a>
+            </a>
+            <nav class="nav" role="navigation" aria-label="Main navigation">
+                <a href="index.html" class="active" aria-current="page">Home</a>
                 <a href="search.html">Search Flights</a>
                 <a href="dashboard.html">Dashboard</a>
                 <a href="sitemap.html">Site Guide</a>
                 <a href="#features">Features</a>
             </nav>
             <div class="header-actions">
-                <button class="btn-secondary">Sign In</button>
-                <button class="btn-primary">Sign Up</button>
+                <button class="btn-secondary" aria-label="Sign in to your account">Sign In</button>
+                <button class="btn-primary" aria-label="Create new account">Sign Up</button>
             </div>
+            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    Find Your Perfect Flight
-                    <span class="gradient-text">At The Best Price</span>
-                </h1>
-                <p class="hero-subtitle">Search across 500+ airlines and find award flights using your points. Compare prices, cabin classes, and book with confidence.</p>
-                
-                <!-- Search Widget -->
-                <div class="search-widget">
-                    <div class="search-tabs">
-                        <button class="tab-btn active" data-tab="roundtrip">Round Trip</button>
-                        <button class="tab-btn" data-tab="oneway">One Way</button>
-                        <button class="tab-btn" data-tab="multi">Multi-City</button>
-                    </div>
+    <main id="main-content">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-bg" aria-hidden="true"></div>
+            <div class="container">
+                <div class="hero-content">
+                    <h1 id="hero-title" class="hero-title">
+                        Find Your Perfect Flight
+                        <span class="gradient-text">At The Best Price</span>
+                    </h1>
+                    <p class="hero-subtitle">Search across 500+ airlines and find award flights using your points. Compare prices, cabin classes, and book with confidence.</p>
                     
-                    <div class="search-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>From</label>
-                                <input type="text" placeholder="JFK - New York" class="input-airport">
-                            </div>
-                            <button class="swap-btn">⇄</button>
-                            <div class="form-group">
-                                <label>To</label>
-                                <input type="text" placeholder="MXP - Milan" class="input-airport">
-                            </div>
+                    <!-- Search Widget -->
+                    <div class="search-widget" role="search">
+                        <div class="search-tabs" role="tablist" aria-label="Trip type selection">
+                            <button class="tab-btn active" role="tab" data-tab="roundtrip" aria-selected="true" aria-controls="search-form">Round Trip</button>
+                            <button class="tab-btn" role="tab" data-tab="oneway" aria-selected="false" aria-controls="search-form">One Way</button>
+                            <button class="tab-btn" role="tab" data-tab="multi" aria-selected="false" aria-controls="search-form">Multi-City</button>
                         </div>
                         
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Departure</label>
-                                <input type="date" class="input-date">
+                        <form class="search-form" id="search-form" role="tabpanel" aria-label="Flight search form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="input-from">From</label>
+                                    <input type="text" id="input-from" placeholder="JFK - New York" class="input-airport" required aria-required="true" autocomplete="off">
+                                </div>
+                                <button type="button" class="swap-btn" aria-label="Swap origin and destination">⇄</button>
+                                <div class="form-group">
+                                    <label for="input-to">To</label>
+                                    <input type="text" id="input-to" placeholder="MXP - Milan" class="input-airport" required aria-required="true" autocomplete="off">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>Return</label>
-                                <input type="date" class="input-date">
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="input-departure">Departure</label>
+                                    <input type="date" id="input-departure" class="input-date" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-return">Return</label>
+                                    <input type="date" id="input-return" class="input-date" required aria-required="true">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-passengers">Passengers</label>
+                                    <select id="input-passengers" class="input-select" aria-label="Select number of passengers">
+                                        <option value="1">1 Passenger</option>
+                                        <option value="2" selected>2 Passengers</option>
+                                        <option value="3">3 Passengers</option>
+                                        <option value="4">4+ Passengers</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-class">Class</label>
+                                    <select id="input-class" class="input-select" aria-label="Select cabin class">
+                                        <option value="economy">Economy</option>
+                                        <option value="premium">Premium Economy</option>
+                                        <option value="business" selected>Business</option>
+                                        <option value="first">First Class</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>Passengers</label>
-                                <select class="input-select">
-                                    <option>1 Passenger</option>
-                                    <option>2 Passengers</option>
-                                    <option>3 Passengers</option>
-                                    <option>4+ Passengers</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Class</label>
-                                <select class="input-select">
-                                    <option>Economy</option>
-                                    <option>Premium Economy</option>
-                                    <option>Business</option>
-                                    <option>First Class</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <button class="btn-search">
-                            <span>Search Flights</span>
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M9 17L15 11L9 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            </svg>
-                        </button>
+                            
+                            <button type="submit" class="btn-search" aria-label="Search for flights">
+                                <span>Search Flights</span>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                    <path d="M9 17L15 11L9 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Features Section -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Why Choose Velox?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🔍</div>
-                    <h3>Smart Search</h3>
-                    <p>Compare prices across 500+ airlines and travel sites in seconds</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💎</div>
-                    <h3>Award Flights</h3>
-                    <p>Find the best deals using your airline miles and credit card points</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Price Tracking</h3>
-                    <p>Get alerts when prices drop for your favorite routes</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Flexible Dates</h3>
-                    <p>See prices across multiple dates to find the cheapest option</p>
+        <!-- Features Section -->
+        <section id="features" class="features" aria-labelledby="features-title">
+            <div class="container">
+                <h2 id="features-title" class="section-title">Why Choose Velox?</h2>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" role="img" aria-label="Search icon">🔍</div>
+                        <h3>Smart Search</h3>
+                        <p>Compare prices across 500+ airlines and travel sites in seconds</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" role="img" aria-label="Diamond icon">💎</div>
+                        <h3>Award Flights</h3>
+                        <p>Find the best deals using your airline miles and credit card points</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" role="img" aria-label="Chart icon">📊</div>
+                        <h3>Price Tracking</h3>
+                        <p>Get alerts when prices drop for your favorite routes</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" role="img" aria-label="Target icon">🎯</div>
+                        <h3>Flexible Dates</h3>
+                        <p>See prices across multiple dates to find the cheapest option</p>
+                    </article>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Popular Routes -->
-    <section class="popular-routes">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Popular Routes</h2>
-                <a href="search.html" class="link-view-all">View All →</a>
+        <!-- Popular Routes -->
+        <section class="popular-routes" aria-labelledby="routes-title">
+            <div class="container">
+                <div class="section-header">
+                    <h2 id="routes-title" class="section-title">Popular Routes</h2>
+                    <a href="search.html" class="link-view-all">View All →</a>
+                </div>
+                <div class="routes-grid">
+                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from New York JFK to London Heathrow starting at $345">
+                        <div class="route-info">
+                            <div class="route-cities">
+                                <span class="city-code">JFK</span>
+                                <span class="route-arrow" aria-hidden="true">→</span>
+                                <span class="city-code">LHR</span>
+                            </div>
+                            <div class="route-names">New York to London</div>
+                        </div>
+                        <div class="route-price">
+                            <span class="price-from">from</span>
+                            <span class="price-amount">$345</span>
+                        </div>
+                    </article>
+                    
+                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from Los Angeles to Tokyo starting at $520">
+                        <div class="route-info">
+                            <div class="route-cities">
+                                <span class="city-code">LAX</span>
+                                <span class="route-arrow" aria-hidden="true">→</span>
+                                <span class="city-code">NRT</span>
+                            </div>
+                            <div class="route-names">Los Angeles to Tokyo</div>
+                        </div>
+                        <div class="route-price">
+                            <span class="price-from">from</span>
+                            <span class="price-amount">$520</span>
+                        </div>
+                    </article>
+                    
+                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from San Francisco to Paris starting at $410">
+                        <div class="route-info">
+                            <div class="route-cities">
+                                <span class="city-code">SFO</span>
+                                <span class="route-arrow" aria-hidden="true">→</span>
+                                <span class="city-code">CDG</span>
+                            </div>
+                            <div class="route-names">San Francisco to Paris</div>
+                        </div>
+                        <div class="route-price">
+                            <span class="price-from">from</span>
+                            <span class="price-amount">$410</span>
+                        </div>
+                    </article>
+                    
+                    <article class="route-card" role="button" tabindex="0" aria-label="Search flights from Miami to Barcelona starting at $395">
+                        <div class="route-info">
+                            <div class="route-cities">
+                                <span class="city-code">MIA</span>
+                                <span class="route-arrow" aria-hidden="true">→</span>
+                                <span class="city-code">BCN</span>
+                            </div>
+                            <div class="route-names">Miami to Barcelona</div>
+                        </div>
+                        <div class="route-price">
+                            <span class="price-from">from</span>
+                            <span class="price-amount">$395</span>
+                        </div>
+                    </article>
+                </div>
             </div>
-            <div class="routes-grid">
-                <div class="route-card">
-                    <div class="route-info">
-                        <div class="route-cities">
-                            <span class="city-code">JFK</span>
-                            <span class="route-arrow">→</span>
-                            <span class="city-code">LHR</span>
-                        </div>
-                        <div class="route-names">New York to London</div>
-                    </div>
-                    <div class="route-price">
-                        <span class="price-from">from</span>
-                        <span class="price-amount">$345</span>
-                    </div>
-                </div>
-                
-                <div class="route-card">
-                    <div class="route-info">
-                        <div class="route-cities">
-                            <span class="city-code">LAX</span>
-                            <span class="route-arrow">→</span>
-                            <span class="city-code">NRT</span>
-                        </div>
-                        <div class="route-names">Los Angeles to Tokyo</div>
-                    </div>
-                    <div class="route-price">
-                        <span class="price-from">from</span>
-                        <span class="price-amount">$520</span>
-                    </div>
-                </div>
-                
-                <div class="route-card">
-                    <div class="route-info">
-                        <div class="route-cities">
-                            <span class="city-code">SFO</span>
-                            <span class="route-arrow">→</span>
-                            <span class="city-code">CDG</span>
-                        </div>
-                        <div class="route-names">San Francisco to Paris</div>
-                    </div>
-                    <div class="route-price">
-                        <span class="price-from">from</span>
-                        <span class="price-amount">$410</span>
-                    </div>
-                </div>
-                
-                <div class="route-card">
-                    <div class="route-info">
-                        <div class="route-cities">
-                            <span class="city-code">MIA</span>
-                            <span class="route-arrow">→</span>
-                            <span class="city-code">BCN</span>
-                        </div>
-                        <div class="route-names">Miami to Barcelona</div>
-                    </div>
-                    <div class="route-price">
-                        <span class="price-from">from</span>
-                        <span class="price-amount">$395</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <h2>Ready to Start Your Journey?</h2>
-                <p>Join thousands of travelers who save money on flights every day</p>
-                <button class="btn-cta">Get Started Free</button>
+        <!-- CTA Section -->
+        <section class="cta-section" aria-labelledby="cta-title">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 id="cta-title">Ready to Start Your Journey?</h2>
+                    <p>Join thousands of travelers who save money on flights every day</p>
+                    <button class="btn-cta" aria-label="Sign up for free account">Get Started Free</button>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="footer" role="contentinfo">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
                     <div class="logo">
-                        <div class="logo-icon"></div>
+                        <div class="logo-icon" role="img" aria-label="Airplane icon"></div>
                         <span>Velox</span>
                     </div>
                     <p>Your smart travel companion for finding the best flight deals worldwide.</p>
@@ -227,25 +286,25 @@
                 <div class="footer-col">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="#">Features</a></li>
-                        <li><a href="#">Pricing</a></li>
-                        <li><a href="#">API</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="sitemap.html">Pricing</a></li>
+                        <li><a href="sitemap.html">API</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Careers</a></li>
+                        <li><a href="sitemap.html">About</a></li>
+                        <li><a href="sitemap.html">Blog</a></li>
+                        <li><a href="sitemap.html">Careers</a></li>
                     </ul>
                 </div>
                 <div class="footer-col">
                     <h4>Support</h4>
                     <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Terms</a></li>
+                        <li><a href="sitemap.html">Help Center</a></li>
+                        <li><a href="sitemap.html">Contact</a></li>
+                        <li><a href="sitemap.html">Terms</a></li>
                     </ul>
                 </div>
             </div>
@@ -255,6 +314,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- Scripts -->
+    <script src="./script.js" defer></script>
 </body>
 </html>
