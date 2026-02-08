@@ -275,28 +275,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress-bar';
     
+    // Create SVG plane
     const plane = document.createElement('div');
     plane.className = 'scroll-plane';
-    plane.textContent = '✈️';
+    plane.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" 
+                  fill="#c5ff68" 
+                  stroke="#a8e050" 
+                  stroke-width="0.5"/>
+        </svg>
+    `;
     
-    // Create animated clouds
-    const cloud1 = document.createElement('div');
-    cloud1.className = 'scroll-cloud';
-    cloud1.textContent = '☁️';
+    // Create cloud SVG elements (3 clouds)
+    const createCloud = () => {
+        const cloud = document.createElement('div');
+        cloud.className = 'scroll-cloud';
+        cloud.innerHTML = `
+            <svg viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="15" cy="25" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
+                <ellipse cx="25" cy="20" rx="12" ry="10" fill="#4a9cff" opacity="0.2"/>
+                <ellipse cx="35" cy="22" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
+                <ellipse cx="45" cy="26" rx="8" ry="7" fill="#4a9cff" opacity="0.12"/>
+                <rect x="12" y="24" width="38" height="8" rx="4" fill="#4a9cff" opacity="0.18"/>
+            </svg>
+        `;
+        return cloud;
+    };
     
-    const cloud2 = document.createElement('div');
-    cloud2.className = 'scroll-cloud';
-    cloud2.textContent = '☁️';
+    const cloud1 = createCloud();
+    const cloud2 = createCloud();
+    const cloud3 = createCloud();
     
-    const cloud3 = document.createElement('div');
-    cloud3.className = 'scroll-cloud';
-    cloud3.textContent = '☁️';
-    
-    progressContainer.appendChild(progressBar);
-    progressContainer.appendChild(plane);
     progressContainer.appendChild(cloud1);
     progressContainer.appendChild(cloud2);
     progressContainer.appendChild(cloud3);
+    progressContainer.appendChild(progressBar);
+    progressContainer.appendChild(plane);
     document.body.appendChild(progressContainer);
     
     let scrollTimeout;
@@ -309,17 +324,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update bar width
         progressBar.style.width = scrolled + '%';
         
-        // Move plane with progress
-        plane.style.left = `calc(${scrolled}% - 15px)`;
+        // Move plane with progress (centered on the bar end)
+        plane.style.left = scrolled + '%';
         
         // Show progress bar while scrolling
         progressContainer.classList.add('visible');
         
-        // Hide after scrolling stops (1 second delay)
+        // Hide after scrolling stops (1.5 second delay)
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             progressContainer.classList.remove('visible');
-        }, 1000);
+        }, 1500);
     });
     
     // Show loading indicator
