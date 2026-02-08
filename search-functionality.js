@@ -196,6 +196,16 @@ function updateFilterCounts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Scroll progress indicator
+    const progressBar = document.querySelector('.scroll-progress');
+    if (progressBar) {
+        window.addEventListener('scroll', () => {
+            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            progressBar.style.width = scrolled + '%';
+        });
+    }
+
     // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
     const from = params.get('from') || 'JFK';
