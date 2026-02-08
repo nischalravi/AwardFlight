@@ -225,3 +225,6 @@ const flightDatabase = [
         ]
     }
 ];
+
+// Export to window for global access
+window.flightDatabase = flightDatabase;
