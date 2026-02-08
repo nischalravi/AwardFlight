@@ -324,7 +324,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update bar width
         progressBar.style.width = scrolled + '%';
         
-        // Move plane with progress (centered on the bar end)
+        // Position plane at the END of the progress bar (not independently)
+        // The plane should travel WITH the bar as it fills
         plane.style.left = scrolled + '%';
         
         // Show progress bar while scrolling
