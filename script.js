@@ -268,6 +268,18 @@ const showToast = (message, type = 'success') => {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Create scroll progress indicator
+    const progressBar = document.createElement('div');
+    progressBar.className = 'scroll-progress';
+    document.body.appendChild(progressBar);
+    
+    // Update progress on scroll
+    window.addEventListener('scroll', () => {
+        const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (window.scrollY / windowHeight) * 100;
+        progressBar.style.width = scrolled + '%';
+    });
+    
     // Show loading indicator
     const loadingIndicator = document.createElement('div');
     loadingIndicator.id = 'airport-loading';
