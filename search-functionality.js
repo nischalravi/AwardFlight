@@ -196,15 +196,65 @@ function updateFilterCounts() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Scroll progress indicator
-    const progressBar = document.querySelector('.scroll-progress');
-    if (progressBar) {
-        window.addEventListener('scroll', () => {
-            const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (window.scrollY / windowHeight) * 100;
-            progressBar.style.width = scrolled + '%';
-        });
-    }
+    // Create scroll progress indicator with plane and clouds
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'scroll-progress';
+    
+    const progressBar = document.createElement('div');
+    progressBar.className = 'scroll-progress-bar';
+    
+    // Create SVG plane pointing RIGHT
+    const plane = document.createElement('div');
+    plane.className = 'scroll-plane';
+    plane.innerHTML = `
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 28 16 L 18 12 L 18 8 C 18 6.5 17 5 16 5 C 15 5 14 6.5 14 8 L 14 12 L 4 16 L 4 18 L 14 16 L 14 24 L 11 26 L 11 28 L 16 27 L 21 28 L 21 26 L 18 24 L 18 16 L 28 18 Z" 
+                  fill="#c5ff68" 
+                  stroke="#a8e050" 
+                  stroke-width="0.5"/>
+        </svg>
+    `;
+    
+    // Create cloud SVG elements
+    const createCloud = () => {
+        const cloud = document.createElement('div');
+        cloud.className = 'scroll-cloud';
+        cloud.innerHTML = `
+            <svg viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="15" cy="25" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
+                <ellipse cx="25" cy="20" rx="12" ry="10" fill="#4a9cff" opacity="0.2"/>
+                <ellipse cx="35" cy="22" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
+                <ellipse cx="45" cy="26" rx="8" ry="7" fill="#4a9cff" opacity="0.12"/>
+                <rect x="12" y="24" width="38" height="8" rx="4" fill="#4a9cff" opacity="0.18"/>
+            </svg>
+        `;
+        return cloud;
+    };
+    
+    progressContainer.appendChild(createCloud());
+    progressContainer.appendChild(createCloud());
+    progressContainer.appendChild(createCloud());
+    progressContainer.appendChild(progressBar);
+    progressContainer.appendChild(plane);
+    document.body.appendChild(progressContainer);
+    
+    let scrollTimeout;
+    
+    // Update progress on scroll
+    window.addEventListener('scroll', () => {
+        const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (window.scrollY / windowHeight) * 100;
+        
+        progressBar.style.width = scrolled + '%';
+        plane.style.left = scrolled + '%';
+        
+        progressContainer.classList.add('visible');
+        
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            progressContainer.classList.remove('visible');
+        }, 1500);
+    });
 
     // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
