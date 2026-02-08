@@ -32,12 +32,79 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 0%;
-    height: 4px;
-    background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+    width: 100%;
+    height: 6px;
+    background: rgba(26, 35, 50, 0.5);
     z-index: 10001;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: visible;
+}
+
+.scroll-progress.visible {
+    opacity: 1;
+}
+
+.scroll-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+    box-shadow: 0 0 15px rgba(197, 255, 104, 0.6);
     transition: width 0.1s ease-out;
-    box-shadow: 0 0 10px rgba(197, 255, 104, 0.5);
+}
+
+/* Flying plane on progress bar */
+.scroll-plane {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: left 0.1s ease-out;
+    z-index: 10;
+}
+
+/* Animated clouds */
+.scroll-cloud {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    opacity: 0.4;
+    animation: cloudFloat 8s ease-in-out infinite;
+}
+
+.scroll-cloud:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.scroll-cloud:nth-child(2) {
+    animation-delay: 2s;
+}
+
+.scroll-cloud:nth-child(3) {
+    animation-delay: 4s;
+}
+
+@keyframes cloudFloat {
+    0%, 100% {
+        left: -5%;
+        opacity: 0;
+    }
+    10%, 90% {
+        opacity: 0.4;
+    }
+    50% {
+        left: 50%;
+        opacity: 0.6;
+    }
+    100% {
+        left: 105%;
+        opacity: 0;
+    }
 }
 
 /* Skip Link for Accessibility */
