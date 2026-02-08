@@ -4,17 +4,17 @@
 
 let currentFilters = {
     priceMax: 2000,
-    stops: { 0: true, 1: true, 2: false },
+    stops: { 0: true, 1: true, 2: true },  // All checked initially to match UI
     airlines: {
         'Air France': true,
         'British Airways': true,
         'Lufthansa': true,
-        'Emirates': false
+        'Emirates': true  // Changed to true to show all initially
     },
     departTime: {
         'morning': true,
         'afternoon': true,
-        'evening': false
+        'evening': true  // Changed to true to show all initially
     }
 };
 
