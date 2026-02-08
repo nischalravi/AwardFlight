@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Results - Velox</title>
+    <title>Search Results - Award Flights</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
@@ -47,8 +47,6 @@
             gap: 0.75rem;
             font-size: 1.5rem;
             font-weight: 700;
-            text-decoration: none;
-            color: inherit;
         }
 
         .logo-icon {
@@ -187,7 +185,6 @@
             border-radius: 5px;
             position: relative;
             transition: all 0.3s ease;
-            flex-shrink: 0;
         }
 
         .checkbox.checked {
@@ -221,31 +218,6 @@
         .price-slider {
             width: 100%;
             margin-top: 1rem;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            background: var(--bg-secondary);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .price-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--accent-green);
-            cursor: pointer;
-            border-radius: 50%;
-        }
-
-        .price-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: var(--accent-green);
-            cursor: pointer;
-            border-radius: 50%;
-            border: none;
         }
 
         .price-range {
@@ -254,33 +226,6 @@
             margin-top: 0.5rem;
             color: var(--text-secondary);
             font-size: 0.9rem;
-        }
-
-        /* View Toggle */
-        .view-toggle {
-            display: flex;
-            gap: 0.5rem;
-            background: var(--bg-card);
-            padding: 0.5rem;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-
-        .view-btn {
-            padding: 0.5rem 1rem;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-family: inherit;
-        }
-
-        .view-btn.active {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
         }
 
         /* Results Section */
@@ -306,12 +251,6 @@
         .results-count span {
             color: var(--text-secondary);
             font-weight: 400;
-        }
-
-        .results-controls {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
         }
 
         .sort-dropdown {
@@ -343,7 +282,7 @@
         .flight-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 1.5rem;
         }
 
@@ -362,26 +301,15 @@
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .airline-details {
-            display: flex;
-            flex-direction: column;
         }
 
         .airline-name {
             font-weight: 600;
-            margin-bottom: 0.25rem;
         }
 
         .flight-code {
             color: var(--text-secondary);
             font-size: 0.9rem;
-        }
-
-        .price-info {
-            text-align: right;
         }
 
         .price-badge {
@@ -391,19 +319,6 @@
             border-radius: 12px;
             font-size: 1.75rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: inline-block;
-        }
-
-        .points-info {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.5rem;
-        }
-
-        .points-value {
-            color: var(--accent-blue);
-            font-weight: 600;
         }
 
         .flight-route {
@@ -464,140 +379,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Award Information Section */
-        .award-info {
-            background: var(--bg-secondary);
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .award-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .award-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-        }
-
-        .award-toggle {
-            background: transparent;
-            border: none;
-            color: var(--accent-blue);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .award-toggle:hover {
-            color: var(--accent-green);
-        }
-
-        .award-options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .award-option {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            background: var(--bg-card);
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .award-option:hover {
-            background: var(--bg-secondary);
-            transform: translateX(3px);
-        }
-
-        .award-airline {
-            font-weight: 600;
-            color: var(--accent-blue);
-            font-size: 0.9rem;
-        }
-
-        .award-points {
-            color: var(--text-primary);
-            font-weight: 700;
-        }
-
-        .award-miles-label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            margin-left: 0.25rem;
-        }
-
-        /* Transfer Partners */
-        .transfer-partners {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .transfer-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.75rem;
-        }
-
-        .credit-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .credit-card-badge {
-            padding: 0.4rem 0.75rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .credit-card-badge:hover {
-            border-color: var(--accent-green);
-            background: var(--bg-secondary);
-        }
-
-        .credit-card-badge.amex {
-            border-color: #006FCF;
-            color: #006FCF;
-        }
-
-        .credit-card-badge.chase {
-            border-color: #117ACA;
-            color: #117ACA;
-        }
-
-        .credit-card-badge.citi {
-            border-color: #056DAE;
-            color: #056DAE;
-        }
-
-        .credit-card-badge.capital-one {
-            border-color: #D8232A;
-            color: #D8232A;
-        }
-
-        .credit-card-badge.marriott {
-            border-color: #8B0304;
-            color: #8B0304;
-        }
-
         .flight-details {
             display: flex;
             justify-content: space-between;
@@ -623,7 +404,6 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: inherit;
         }
 
         .btn-select:hover {
@@ -631,28 +411,22 @@
             box-shadow: 0 10px 30px rgba(197, 255, 104, 0.4);
         }
 
-        /* Award Details Expanded */
-        .award-details-expanded {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        /* Loading State */
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-secondary) 50%, var(--bg-card) 100%);
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+            border-radius: 20px;
+            height: 200px;
         }
 
-        .award-details-expanded.show {
-            max-height: 500px;
-        }
-
-        .partner-route {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        .route-arrow {
-            color: var(--accent-green);
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         /* Responsive */
@@ -669,27 +443,26 @@
     </style>
 </head>
 <body>
-    <!-- Scroll Progress Indicator -->
-    <div class="scroll-progress"></div>
-
     <!-- Header -->
     <div class="header">
-        <a href="index.html" class="logo">
-            <div class="logo-icon"></div>
-            <span>Velox</span>
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Award Flights</span>
+            </div>
         </a>
         
         <div class="search-header">
             <div class="search-info">
                 <div class="route-display">
-                    <span id="header-from">JFK</span>
+                    <span>JFK</span>
                     <span>→</span>
-                    <span id="header-to">MXP</span>
+                    <span>MXP</span>
                 </div>
-                <div class="date-display" id="header-dates">Mon, Jan 20 - Thu, Jan 30</div>
-                <div class="class-display" id="header-class">Business • 2 Passengers</div>
+                <div class="date-display">Mon, Jan 20 - Thu, Jan 30</div>
+                <div class="class-display">Business • 2 Passengers</div>
             </div>
-            <button class="btn-modify" onclick="window.location.href='index.html'">Modify</button>
+            <button class="btn-modify">Modify</button>
         </div>
         
         <div class="user-menu">
@@ -712,82 +485,114 @@
 
             <div class="filter-section">
                 <div class="filter-title">Stops</div>
-                <div class="filter-option" data-filter="stops" data-value="0">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>Non-stop</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">12</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="stops" data-value="1">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>1 Stop</span>
-                        <span class="filter-count">4</span>
+                        <span class="filter-count">24</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="stops" data-value="2">
+                <div class="filter-option">
                     <div class="checkbox"></div>
                     <label>
                         <span>2+ Stops</span>
-                        <span class="filter-count">1</span>
+                        <span class="filter-count">8</span>
                     </label>
                 </div>
             </div>
 
             <div class="filter-section">
                 <div class="filter-title">Airlines</div>
-                <div class="filter-option" data-filter="airline" data-value="Air France">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>Air France</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">8</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="airline" data-value="British Airways">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>British Airways</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">6</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="airline" data-value="Lufthansa">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>Lufthansa</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">5</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="airline" data-value="Emirates">
+                <div class="filter-option">
                     <div class="checkbox"></div>
                     <label>
                         <span>Emirates</span>
-                        <span class="filter-count">1</span>
+                        <span class="filter-count">4</span>
                     </label>
                 </div>
             </div>
 
             <div class="filter-section">
                 <div class="filter-title">Departure Time</div>
-                <div class="filter-option" data-filter="time" data-value="morning">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>Morning (6AM - 12PM)</span>
-                        <span class="filter-count">3</span>
+                        <span class="filter-count">15</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="time" data-value="afternoon">
+                <div class="filter-option">
                     <div class="checkbox checked"></div>
                     <label>
                         <span>Afternoon (12PM - 6PM)</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">18</span>
                     </label>
                 </div>
-                <div class="filter-option" data-filter="time" data-value="evening">
+                <div class="filter-option">
                     <div class="checkbox"></div>
                     <label>
                         <span>Evening (6PM - 12AM)</span>
-                        <span class="filter-count">2</span>
+                        <span class="filter-count">11</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Cabin Class</div>
+                <div class="filter-option">
+                    <div class="checkbox"></div>
+                    <label>
+                        <span>Economy</span>
+                        <span class="filter-count">32</span>
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <div class="checkbox"></div>
+                    <label>
+                        <span>Premium Economy</span>
+                        <span class="filter-count">18</span>
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <div class="checkbox checked"></div>
+                    <label>
+                        <span>Business</span>
+                        <span class="filter-count">12</span>
+                    </label>
+                </div>
+                <div class="filter-option">
+                    <div class="checkbox"></div>
+                    <label>
+                        <span>First Class</span>
+                        <span class="filter-count">6</span>
                     </label>
                 </div>
             </div>
@@ -797,29 +602,380 @@
         <main class="results-section">
             <div class="results-header">
                 <div class="results-count">
-                    <span id="results-count">7</span> flights <span>found</span>
+                    44 flights <span>found</span>
                 </div>
-                <div class="results-controls">
-                    <div class="view-toggle">
-                        <button class="view-btn active">💵 Price</button>
-                        <button class="view-btn">💎 Points</button>
-                    </div>
-                    <select class="sort-dropdown" id="sort-select">
-                        <option>Best Match</option>
-                        <option>Lowest Price</option>
-                        <option>Fewest Miles</option>
-                        <option>Shortest Duration</option>
-                        <option>Earliest Departure</option>
-                    </select>
-                </div>
+                <select class="sort-dropdown">
+                    <option>Best Match</option>
+                    <option>Lowest Price</option>
+                    <option>Shortest Duration</option>
+                    <option>Earliest Departure</option>
+                    <option>Latest Departure</option>
+                </select>
             </div>
 
+            <!-- Flight Cards -->
             <!-- Flights will be dynamically generated here -->
-            <div id="flights-container"></div>
         </main>
     </div>
 
-    <script src="./search-flights-data.js"></script>
-    <script src="./search-functionality.js"></script>
+    <script>
+        // Sample flight data
+        const allFlights = [
+            {
+                id: 1,
+                airline: 'Air France',
+                code: 'AF 685',
+                aircraft: 'Boeing 777-300ER',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+                price: 1250,
+                departTime: '6:30 PM',
+                arriveTime: '8:15 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '8h 45m',
+                stops: 0,
+                stopInfo: 'Non-stop',
+                legroom: 'Average legroom (31")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'evening'
+            },
+            {
+                id: 2,
+                airline: 'British Airways',
+                code: 'BA 112',
+                aircraft: 'Airbus A350-1000',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #3498db, #2980b9)',
+                price: 1180,
+                departTime: '9:20 AM',
+                arriveTime: '10:45 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '13h 25m',
+                stops: 1,
+                stopInfo: '1 stop in LHR',
+                legroom: 'Above average legroom (34")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            },
+            {
+                id: 3,
+                airline: 'Lufthansa',
+                code: 'LH 405',
+                aircraft: 'Boeing 747-8',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #f39c12, #e67e22)',
+                price: 1320,
+                departTime: '2:15 PM',
+                arriveTime: '11:45 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '9h 30m',
+                stops: 0,
+                stopInfo: 'Non-stop',
+                legroom: 'Average legroom (32")',
+                entertainment: true,
+                meal: '2 meals included',
+                departTimeCategory: 'afternoon'
+            },
+            {
+                id: 4,
+                airline: 'Emirates',
+                code: 'EK 201',
+                aircraft: 'Airbus A380',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #c0392b, #e74c3c)',
+                price: 1580,
+                departTime: '11:30 PM',
+                arriveTime: '5:45 PM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '16h 15m',
+                stops: 2,
+                stopInfo: '2 stops in DXB, FCO',
+                legroom: 'Extra legroom (36")',
+                entertainment: true,
+                meal: '3 meals included',
+                departTimeCategory: 'evening'
+            },
+            {
+                id: 5,
+                airline: 'Air France',
+                code: 'AF 332',
+                aircraft: 'Boeing 787-9',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+                price: 1095,
+                departTime: '7:45 AM',
+                arriveTime: '9:30 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '11h 45m',
+                stops: 1,
+                stopInfo: '1 stop in CDG',
+                legroom: 'Average legroom (31")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            },
+            {
+                id: 6,
+                airline: 'British Airways',
+                code: 'BA 178',
+                aircraft: 'Boeing 777-200',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #3498db, #2980b9)',
+                price: 1445,
+                departTime: '3:40 PM',
+                arriveTime: '6:25 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '12h 45m',
+                stops: 1,
+                stopInfo: '1 stop in LHR',
+                legroom: 'Above average legroom (34")',
+                entertainment: true,
+                meal: '2 meals included',
+                departTimeCategory: 'afternoon'
+            },
+            {
+                id: 7,
+                airline: 'Lufthansa',
+                code: 'LH 988',
+                aircraft: 'Airbus A340-600',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #f39c12, #e67e22)',
+                price: 1290,
+                departTime: '10:15 AM',
+                arriveTime: '12:30 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '14h 15m',
+                stops: 1,
+                stopInfo: '1 stop in FRA',
+                legroom: 'Average legroom (32")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            }
+        ];
+
+        // Current filters
+        let filters = {
+            priceMax: 2000,
+            stops: { 0: true, 1: true, 2: false },
+            airlines: {
+                'Air France': true,
+                'British Airways': true,
+                'Lufthansa': true,
+                'Emirates': false
+            },
+            departTime: {
+                'morning': true,
+                'afternoon': true,
+                'evening': false
+            }
+        };
+
+        // Render flights
+        function renderFlights() {
+            const filteredFlights = allFlights.filter(flight => {
+                // Price filter
+                if (flight.price > filters.priceMax) return false;
+                
+                // Stops filter
+                if (!filters.stops[flight.stops]) return false;
+                
+                // Airline filter
+                if (!filters.airlines[flight.airline]) return false;
+                
+                // Departure time filter
+                if (!filters.departTime[flight.departTimeCategory]) return false;
+                
+                return true;
+            });
+
+            const resultsContainer = document.querySelector('.results-section');
+            const resultsHeader = resultsContainer.querySelector('.results-header');
+            
+            // Update count
+            resultsHeader.querySelector('.results-count').innerHTML = 
+                `${filteredFlights.length} flights <span>found</span>`;
+
+            // Clear existing flights
+            const existingFlights = resultsContainer.querySelectorAll('.flight-card');
+            existingFlights.forEach(card => card.remove());
+
+            // Render filtered flights
+            filteredFlights.forEach(flight => {
+                const flightCard = createFlightCard(flight);
+                resultsContainer.appendChild(flightCard);
+            });
+
+            // Update filter counts
+            updateFilterCounts();
+        }
+
+        function createFlightCard(flight) {
+            const card = document.createElement('div');
+            card.className = 'flight-card';
+            card.innerHTML = `
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo" style="background: ${flight.logoColor};">${flight.logo}</div>
+                        <div>
+                            <div class="airline-name">${flight.airline}</div>
+                            <div class="flight-code">${flight.code} • ${flight.aircraft}</div>
+                        </div>
+                    </div>
+                    <div class="price-badge">$${flight.price.toLocaleString()}</div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">${flight.departTime}</div>
+                        <div class="route-airport">${flight.departAirport}</div>
+                    </div>
+
+                    <div class="route-visual">
+                        <div class="route-duration">${flight.duration}</div>
+                        <div class="route-line"></div>
+                        <div class="route-stops">${flight.stopInfo}</div>
+                    </div>
+
+                    <div class="route-point">
+                        <div class="route-time">${flight.arriveTime}</div>
+                        <div class="route-airport">${flight.arriveAirport}</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="detail-item">
+                        <span>⚡</span>
+                        <span>${flight.legroom}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>📺</span>
+                        <span>${flight.entertainment ? 'In-flight entertainment' : 'No entertainment'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>🍽️</span>
+                        <span>${flight.meal}</span>
+                    </div>
+                    <button class="btn-select" onclick="window.location.href='dashboard.html'">Select Flight</button>
+                </div>
+            `;
+            return card;
+        }
+
+        function updateFilterCounts() {
+            // Count flights for each filter
+            const counts = {
+                stops: { 0: 0, 1: 0, 2: 0 },
+                airlines: {},
+                departTime: { morning: 0, afternoon: 0, evening: 0 }
+            };
+
+            allFlights.forEach(flight => {
+                if (flight.price <= filters.priceMax) {
+                    counts.stops[flight.stops]++;
+                    counts.airlines[flight.airline] = (counts.airlines[flight.airline] || 0) + 1;
+                    counts.departTime[flight.departTimeCategory]++;
+                }
+            });
+
+            // Update stop counts
+            document.querySelectorAll('.filter-option').forEach(option => {
+                const label = option.querySelector('label span:first-child').textContent;
+                const countSpan = option.querySelector('.filter-count');
+                
+                if (label === 'Non-stop') countSpan.textContent = counts.stops[0];
+                if (label === '1 Stop') countSpan.textContent = counts.stops[1];
+                if (label === '2+ Stops') countSpan.textContent = counts.stops[2];
+                
+                // Airlines
+                if (counts.airlines[label]) {
+                    countSpan.textContent = counts.airlines[label];
+                }
+                
+                // Time
+                if (label.includes('Morning')) countSpan.textContent = counts.departTime.morning;
+                if (label.includes('Afternoon')) countSpan.textContent = counts.departTime.afternoon;
+                if (label.includes('Evening')) countSpan.textContent = counts.departTime.evening;
+            });
+        }
+
+        // Filter checkboxes
+        document.querySelectorAll('.filter-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const checkbox = this.querySelector('.checkbox');
+                const label = this.querySelector('label span:first-child').textContent;
+                checkbox.classList.toggle('checked');
+                
+                // Update filters based on which filter was clicked
+                if (label === 'Non-stop') filters.stops[0] = checkbox.classList.contains('checked');
+                if (label === '1 Stop') filters.stops[1] = checkbox.classList.contains('checked');
+                if (label === '2+ Stops') filters.stops[2] = checkbox.classList.contains('checked');
+                
+                if (label === 'Air France') filters.airlines['Air France'] = checkbox.classList.contains('checked');
+                if (label === 'British Airways') filters.airlines['British Airways'] = checkbox.classList.contains('checked');
+                if (label === 'Lufthansa') filters.airlines['Lufthansa'] = checkbox.classList.contains('checked');
+                if (label === 'Emirates') filters.airlines['Emirates'] = checkbox.classList.contains('checked');
+                
+                if (label.includes('Morning')) filters.departTime.morning = checkbox.classList.contains('checked');
+                if (label.includes('Afternoon')) filters.departTime.afternoon = checkbox.classList.contains('checked');
+                if (label.includes('Evening')) filters.departTime.evening = checkbox.classList.contains('checked');
+                
+                renderFlights();
+            });
+        });
+
+        // Price slider
+        const priceSlider = document.querySelector('.price-slider');
+        const priceRange = document.querySelector('.price-range');
+        
+        priceSlider.addEventListener('input', function() {
+            filters.priceMax = parseInt(this.value);
+            priceRange.querySelector('span:last-child').textContent = 
+                filters.priceMax >= 2000 ? '$2,000+' : `$${filters.priceMax.toLocaleString()}`;
+            renderFlights();
+        });
+
+        // Sort dropdown
+        document.querySelector('.sort-dropdown').addEventListener('change', function() {
+            const sortBy = this.value;
+            
+            if (sortBy === 'Lowest Price') {
+                allFlights.sort((a, b) => a.price - b.price);
+            } else if (sortBy === 'Shortest Duration') {
+                allFlights.sort((a, b) => {
+                    const getDuration = (d) => {
+                        const parts = d.match(/(\d+)h\s*(\d+)m/);
+                        return parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                    };
+                    return getDuration(a.duration) - getDuration(b.duration);
+                });
+            } else if (sortBy === 'Earliest Departure') {
+                allFlights.sort((a, b) => {
+                    const getMinutes = (t) => {
+                        const [time, period] = t.split(' ');
+                        let [hours, minutes] = time.split(':').map(Number);
+                        if (period === 'PM' && hours !== 12) hours += 12;
+                        if (period === 'AM' && hours === 12) hours = 0;
+                        return hours * 60 + minutes;
+                    };
+                    return getMinutes(a.departTime) - getMinutes(b.departTime);
+                });
+            }
+            
+            renderFlights();
+        });
+
+        // Initial render
+        renderFlights();
+    </script>
 </body>
 </html>
