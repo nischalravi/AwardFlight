@@ -268,16 +268,58 @@ const showToast = (message, type = 'success') => {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Create scroll progress indicator
+    // Create enhanced scroll progress indicator
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'scroll-progress';
+    
     const progressBar = document.createElement('div');
-    progressBar.className = 'scroll-progress';
-    document.body.appendChild(progressBar);
+    progressBar.className = 'scroll-progress-bar';
+    
+    const plane = document.createElement('div');
+    plane.className = 'scroll-plane';
+    plane.textContent = '✈️';
+    
+    // Create animated clouds
+    const cloud1 = document.createElement('div');
+    cloud1.className = 'scroll-cloud';
+    cloud1.textContent = '☁️';
+    
+    const cloud2 = document.createElement('div');
+    cloud2.className = 'scroll-cloud';
+    cloud2.textContent = '☁️';
+    
+    const cloud3 = document.createElement('div');
+    cloud3.className = 'scroll-cloud';
+    cloud3.textContent = '☁️';
+    
+    progressContainer.appendChild(progressBar);
+    progressContainer.appendChild(plane);
+    progressContainer.appendChild(cloud1);
+    progressContainer.appendChild(cloud2);
+    progressContainer.appendChild(cloud3);
+    document.body.appendChild(progressContainer);
+    
+    let scrollTimeout;
     
     // Update progress on scroll
     window.addEventListener('scroll', () => {
         const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const scrolled = (window.scrollY / windowHeight) * 100;
+        
+        // Update bar width
         progressBar.style.width = scrolled + '%';
+        
+        // Move plane with progress
+        plane.style.left = `calc(${scrolled}% - 15px)`;
+        
+        // Show progress bar while scrolling
+        progressContainer.classList.add('visible');
+        
+        // Hide after scrolling stops (1 second delay)
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            progressContainer.classList.remove('visible');
+        }, 1000);
     });
     
     // Show loading indicator
