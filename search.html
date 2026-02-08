@@ -614,174 +614,368 @@
             </div>
 
             <!-- Flight Cards -->
-            <div class="flight-card">
-                <div class="flight-header">
-                    <div class="airline-info">
-                        <div class="airline-logo">✈</div>
-                        <div>
-                            <div class="airline-name">Air France</div>
-                            <div class="flight-code">AF 685 • Boeing 777-300ER</div>
-                        </div>
-                    </div>
-                    <div class="price-badge">$1,250</div>
-                </div>
-
-                <div class="flight-route">
-                    <div class="route-point">
-                        <div class="route-time">6:30 PM</div>
-                        <div class="route-airport">JFK - New York</div>
-                    </div>
-
-                    <div class="route-visual">
-                        <div class="route-duration">8h 45m</div>
-                        <div class="route-line"></div>
-                        <div class="route-stops">Non-stop</div>
-                    </div>
-
-                    <div class="route-point">
-                        <div class="route-time">8:15 AM+1</div>
-                        <div class="route-airport">MXP - Milan</div>
-                    </div>
-                </div>
-
-                <div class="flight-details">
-                    <div class="detail-item">
-                        <span>⚡</span>
-                        <span>Average legroom (31")</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>📺</span>
-                        <span>In-flight entertainment</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>🍽️</span>
-                        <span>Meal included</span>
-                    </div>
-                    <button class="btn-select">Select Flight</button>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <div class="flight-header">
-                    <div class="airline-info">
-                        <div class="airline-logo" style="background: linear-gradient(135deg, #3498db, #2980b9);">✈</div>
-                        <div>
-                            <div class="airline-name">British Airways</div>
-                            <div class="flight-code">BA 112 • Airbus A350-1000</div>
-                        </div>
-                    </div>
-                    <div class="price-badge">$1,180</div>
-                </div>
-
-                <div class="flight-route">
-                    <div class="route-point">
-                        <div class="route-time">9:20 AM</div>
-                        <div class="route-airport">JFK - New York</div>
-                    </div>
-
-                    <div class="route-visual">
-                        <div class="route-duration">13h 25m</div>
-                        <div class="route-line"></div>
-                        <div class="route-stops">1 stop in LHR</div>
-                    </div>
-
-                    <div class="route-point">
-                        <div class="route-time">10:45 PM</div>
-                        <div class="route-airport">MXP - Milan</div>
-                    </div>
-                </div>
-
-                <div class="flight-details">
-                    <div class="detail-item">
-                        <span>⚡</span>
-                        <span>Above average legroom (34")</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>📺</span>
-                        <span>In-flight entertainment</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>🍽️</span>
-                        <span>Meal included</span>
-                    </div>
-                    <button class="btn-select">Select Flight</button>
-                </div>
-            </div>
-
-            <div class="flight-card">
-                <div class="flight-header">
-                    <div class="airline-info">
-                        <div class="airline-logo" style="background: linear-gradient(135deg, #f39c12, #e67e22);">✈</div>
-                        <div>
-                            <div class="airline-name">Lufthansa</div>
-                            <div class="flight-code">LH 405 • Boeing 747-8</div>
-                        </div>
-                    </div>
-                    <div class="price-badge">$1,320</div>
-                </div>
-
-                <div class="flight-route">
-                    <div class="route-point">
-                        <div class="route-time">2:15 PM</div>
-                        <div class="route-airport">JFK - New York</div>
-                    </div>
-
-                    <div class="route-visual">
-                        <div class="route-duration">9h 30m</div>
-                        <div class="route-line"></div>
-                        <div class="route-stops">Non-stop</div>
-                    </div>
-
-                    <div class="route-point">
-                        <div class="route-time">11:45 PM</div>
-                        <div class="route-airport">MXP - Milan</div>
-                    </div>
-                </div>
-
-                <div class="flight-details">
-                    <div class="detail-item">
-                        <span>⚡</span>
-                        <span>Average legroom (32")</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>📺</span>
-                        <span>In-flight entertainment</span>
-                    </div>
-                    <div class="detail-item">
-                        <span>🍽️</span>
-                        <span>2 meals included</span>
-                    </div>
-                    <button class="btn-select">Select Flight</button>
-                </div>
-            </div>
+            <!-- Flights will be dynamically generated here -->
         </main>
     </div>
 
     <script>
+        // Sample flight data
+        const allFlights = [
+            {
+                id: 1,
+                airline: 'Air France',
+                code: 'AF 685',
+                aircraft: 'Boeing 777-300ER',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+                price: 1250,
+                departTime: '6:30 PM',
+                arriveTime: '8:15 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '8h 45m',
+                stops: 0,
+                stopInfo: 'Non-stop',
+                legroom: 'Average legroom (31")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'evening'
+            },
+            {
+                id: 2,
+                airline: 'British Airways',
+                code: 'BA 112',
+                aircraft: 'Airbus A350-1000',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #3498db, #2980b9)',
+                price: 1180,
+                departTime: '9:20 AM',
+                arriveTime: '10:45 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '13h 25m',
+                stops: 1,
+                stopInfo: '1 stop in LHR',
+                legroom: 'Above average legroom (34")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            },
+            {
+                id: 3,
+                airline: 'Lufthansa',
+                code: 'LH 405',
+                aircraft: 'Boeing 747-8',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #f39c12, #e67e22)',
+                price: 1320,
+                departTime: '2:15 PM',
+                arriveTime: '11:45 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '9h 30m',
+                stops: 0,
+                stopInfo: 'Non-stop',
+                legroom: 'Average legroom (32")',
+                entertainment: true,
+                meal: '2 meals included',
+                departTimeCategory: 'afternoon'
+            },
+            {
+                id: 4,
+                airline: 'Emirates',
+                code: 'EK 201',
+                aircraft: 'Airbus A380',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #c0392b, #e74c3c)',
+                price: 1580,
+                departTime: '11:30 PM',
+                arriveTime: '5:45 PM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '16h 15m',
+                stops: 2,
+                stopInfo: '2 stops in DXB, FCO',
+                legroom: 'Extra legroom (36")',
+                entertainment: true,
+                meal: '3 meals included',
+                departTimeCategory: 'evening'
+            },
+            {
+                id: 5,
+                airline: 'Air France',
+                code: 'AF 332',
+                aircraft: 'Boeing 787-9',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+                price: 1095,
+                departTime: '7:45 AM',
+                arriveTime: '9:30 PM',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '11h 45m',
+                stops: 1,
+                stopInfo: '1 stop in CDG',
+                legroom: 'Average legroom (31")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            },
+            {
+                id: 6,
+                airline: 'British Airways',
+                code: 'BA 178',
+                aircraft: 'Boeing 777-200',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #3498db, #2980b9)',
+                price: 1445,
+                departTime: '3:40 PM',
+                arriveTime: '6:25 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '12h 45m',
+                stops: 1,
+                stopInfo: '1 stop in LHR',
+                legroom: 'Above average legroom (34")',
+                entertainment: true,
+                meal: '2 meals included',
+                departTimeCategory: 'afternoon'
+            },
+            {
+                id: 7,
+                airline: 'Lufthansa',
+                code: 'LH 988',
+                aircraft: 'Airbus A340-600',
+                logo: '✈',
+                logoColor: 'linear-gradient(135deg, #f39c12, #e67e22)',
+                price: 1290,
+                departTime: '10:15 AM',
+                arriveTime: '12:30 AM+1',
+                departAirport: 'JFK - New York',
+                arriveAirport: 'MXP - Milan',
+                duration: '14h 15m',
+                stops: 1,
+                stopInfo: '1 stop in FRA',
+                legroom: 'Average legroom (32")',
+                entertainment: true,
+                meal: 'Meal included',
+                departTimeCategory: 'morning'
+            }
+        ];
+
+        // Current filters
+        let filters = {
+            priceMax: 2000,
+            stops: { 0: true, 1: true, 2: false },
+            airlines: {
+                'Air France': true,
+                'British Airways': true,
+                'Lufthansa': true,
+                'Emirates': false
+            },
+            departTime: {
+                'morning': true,
+                'afternoon': true,
+                'evening': false
+            }
+        };
+
+        // Render flights
+        function renderFlights() {
+            const filteredFlights = allFlights.filter(flight => {
+                // Price filter
+                if (flight.price > filters.priceMax) return false;
+                
+                // Stops filter
+                if (!filters.stops[flight.stops]) return false;
+                
+                // Airline filter
+                if (!filters.airlines[flight.airline]) return false;
+                
+                // Departure time filter
+                if (!filters.departTime[flight.departTimeCategory]) return false;
+                
+                return true;
+            });
+
+            const resultsContainer = document.querySelector('.results-section');
+            const resultsHeader = resultsContainer.querySelector('.results-header');
+            
+            // Update count
+            resultsHeader.querySelector('.results-count').innerHTML = 
+                `${filteredFlights.length} flights <span>found</span>`;
+
+            // Clear existing flights
+            const existingFlights = resultsContainer.querySelectorAll('.flight-card');
+            existingFlights.forEach(card => card.remove());
+
+            // Render filtered flights
+            filteredFlights.forEach(flight => {
+                const flightCard = createFlightCard(flight);
+                resultsContainer.appendChild(flightCard);
+            });
+
+            // Update filter counts
+            updateFilterCounts();
+        }
+
+        function createFlightCard(flight) {
+            const card = document.createElement('div');
+            card.className = 'flight-card';
+            card.innerHTML = `
+                <div class="flight-header">
+                    <div class="airline-info">
+                        <div class="airline-logo" style="background: ${flight.logoColor};">${flight.logo}</div>
+                        <div>
+                            <div class="airline-name">${flight.airline}</div>
+                            <div class="flight-code">${flight.code} • ${flight.aircraft}</div>
+                        </div>
+                    </div>
+                    <div class="price-badge">$${flight.price.toLocaleString()}</div>
+                </div>
+
+                <div class="flight-route">
+                    <div class="route-point">
+                        <div class="route-time">${flight.departTime}</div>
+                        <div class="route-airport">${flight.departAirport}</div>
+                    </div>
+
+                    <div class="route-visual">
+                        <div class="route-duration">${flight.duration}</div>
+                        <div class="route-line"></div>
+                        <div class="route-stops">${flight.stopInfo}</div>
+                    </div>
+
+                    <div class="route-point">
+                        <div class="route-time">${flight.arriveTime}</div>
+                        <div class="route-airport">${flight.arriveAirport}</div>
+                    </div>
+                </div>
+
+                <div class="flight-details">
+                    <div class="detail-item">
+                        <span>⚡</span>
+                        <span>${flight.legroom}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>📺</span>
+                        <span>${flight.entertainment ? 'In-flight entertainment' : 'No entertainment'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>🍽️</span>
+                        <span>${flight.meal}</span>
+                    </div>
+                    <button class="btn-select" onclick="window.location.href='dashboard.html'">Select Flight</button>
+                </div>
+            `;
+            return card;
+        }
+
+        function updateFilterCounts() {
+            // Count flights for each filter
+            const counts = {
+                stops: { 0: 0, 1: 0, 2: 0 },
+                airlines: {},
+                departTime: { morning: 0, afternoon: 0, evening: 0 }
+            };
+
+            allFlights.forEach(flight => {
+                if (flight.price <= filters.priceMax) {
+                    counts.stops[flight.stops]++;
+                    counts.airlines[flight.airline] = (counts.airlines[flight.airline] || 0) + 1;
+                    counts.departTime[flight.departTimeCategory]++;
+                }
+            });
+
+            // Update stop counts
+            document.querySelectorAll('.filter-option').forEach(option => {
+                const label = option.querySelector('label span:first-child').textContent;
+                const countSpan = option.querySelector('.filter-count');
+                
+                if (label === 'Non-stop') countSpan.textContent = counts.stops[0];
+                if (label === '1 Stop') countSpan.textContent = counts.stops[1];
+                if (label === '2+ Stops') countSpan.textContent = counts.stops[2];
+                
+                // Airlines
+                if (counts.airlines[label]) {
+                    countSpan.textContent = counts.airlines[label];
+                }
+                
+                // Time
+                if (label.includes('Morning')) countSpan.textContent = counts.departTime.morning;
+                if (label.includes('Afternoon')) countSpan.textContent = counts.departTime.afternoon;
+                if (label.includes('Evening')) countSpan.textContent = counts.departTime.evening;
+            });
+        }
+
         // Filter checkboxes
         document.querySelectorAll('.filter-option').forEach(option => {
             option.addEventListener('click', function() {
                 const checkbox = this.querySelector('.checkbox');
+                const label = this.querySelector('label span:first-child').textContent;
                 checkbox.classList.toggle('checked');
+                
+                // Update filters based on which filter was clicked
+                if (label === 'Non-stop') filters.stops[0] = checkbox.classList.contains('checked');
+                if (label === '1 Stop') filters.stops[1] = checkbox.classList.contains('checked');
+                if (label === '2+ Stops') filters.stops[2] = checkbox.classList.contains('checked');
+                
+                if (label === 'Air France') filters.airlines['Air France'] = checkbox.classList.contains('checked');
+                if (label === 'British Airways') filters.airlines['British Airways'] = checkbox.classList.contains('checked');
+                if (label === 'Lufthansa') filters.airlines['Lufthansa'] = checkbox.classList.contains('checked');
+                if (label === 'Emirates') filters.airlines['Emirates'] = checkbox.classList.contains('checked');
+                
+                if (label.includes('Morning')) filters.departTime.morning = checkbox.classList.contains('checked');
+                if (label.includes('Afternoon')) filters.departTime.afternoon = checkbox.classList.contains('checked');
+                if (label.includes('Evening')) filters.departTime.evening = checkbox.classList.contains('checked');
+                
+                renderFlights();
             });
         });
 
-        // Flight card click
-        document.querySelectorAll('.flight-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (!e.target.classList.contains('btn-select')) {
-                    window.location.href = 'dashboard.html';
-                }
-            });
+        // Price slider
+        const priceSlider = document.querySelector('.price-slider');
+        const priceRange = document.querySelector('.price-range');
+        
+        priceSlider.addEventListener('input', function() {
+            filters.priceMax = parseInt(this.value);
+            priceRange.querySelector('span:last-child').textContent = 
+                filters.priceMax >= 2000 ? '$2,000+' : `$${filters.priceMax.toLocaleString()}`;
+            renderFlights();
         });
 
-        // Select flight buttons
-        document.querySelectorAll('.btn-select').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                window.location.href = 'dashboard.html';
-            });
+        // Sort dropdown
+        document.querySelector('.sort-dropdown').addEventListener('change', function() {
+            const sortBy = this.value;
+            
+            if (sortBy === 'Lowest Price') {
+                allFlights.sort((a, b) => a.price - b.price);
+            } else if (sortBy === 'Shortest Duration') {
+                allFlights.sort((a, b) => {
+                    const getDuration = (d) => {
+                        const parts = d.match(/(\d+)h\s*(\d+)m/);
+                        return parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                    };
+                    return getDuration(a.duration) - getDuration(b.duration);
+                });
+            } else if (sortBy === 'Earliest Departure') {
+                allFlights.sort((a, b) => {
+                    const getMinutes = (t) => {
+                        const [time, period] = t.split(' ');
+                        let [hours, minutes] = time.split(':').map(Number);
+                        if (period === 'PM' && hours !== 12) hours += 12;
+                        if (period === 'AM' && hours === 12) hours = 0;
+                        return hours * 60 + minutes;
+                    };
+                    return getMinutes(a.departTime) - getMinutes(b.departTime);
+                });
+            }
+            
+            renderFlights();
         });
+
+        // Initial render
+        renderFlights();
     </script>
 </body>
 </html>
