@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Flight Tracker - Award Flights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        .tracker-page { min-height: 100vh; padding-top: 80px; }
+        .tracker-container { display: grid; grid-template-columns: 350px 1fr; height: calc(100vh - 80px); }
+        .tracker-sidebar { background: #1a2332; border-right: 1px solid #2a3644; overflow-y: auto; padding: 2rem; }
+        .tracker-map { position: relative; background: #0a0f1e; overflow: hidden; }
+        .map-canvas { width: 100%; height: 100%; background: radial-gradient(ellipse at center, #1a2332 0%, #0a0f1e 100%); }
+        .control-input, .control-select { width: 100%; padding: 0.75rem; background: #0a0f1e; border: 1px solid #2a3644; border-radius: 10px; color: #ffffff; font-family: inherit; margin-bottom: 1rem; }
+        .btn-track { width: 100%; padding: 1rem; background: linear-gradient(135deg, #c5ff68, #a8e050); color: #0a0f1e; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .flight-item { background: #0a0f1e; padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; cursor: pointer; transition: all 0.3s ease; border: 1px solid #2a3644; }
+        .flight-item:hover { border-color: #c5ff68; transform: translateX(5px); }
+        .map-stats { position: absolute; bottom: 2rem; left: 2rem; display: flex; gap: 1rem; }
+        .stat-box { background: rgba(26, 35, 50, 0.95); backdrop-filter: blur(20px); padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid #2a3644; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #c5ff68; }
+        .stat-label { font-size: 0.85rem; color: #8a99b3; }
+        .live-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: #c5ff68; color: #0a0f1e; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; margin-bottom: 1rem; }
+        .live-dot { width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container-header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon"></div>
+                <span>Award Flights</span>
+            </a>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="search.html">Search Flights</a>
+                <a href="live-tracker.html" class="active">Live Tracker</a>
+                <a href="calculator.html">Points Calculator</a>
+                <a href="deals.html">Hot Deals</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-secondary">Sign In</button>
+                <button class="btn-primary">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="tracker-page">
+        <div class="tracker-container">
+            <aside class="tracker-sidebar">
+                <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">🛰️ Live Flight Tracker</h2>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        LIVE
+                    </div>
+                </div>
+
+                <label style="font-size: 0.9rem; color: #8a99b3; display: block; margin-bottom: 0.5rem;">Track By Route</label>
+                <input type="text" class="control-input" placeholder="Origin (JFK)" id="track-from">
+                <input type="text" class="control-input" placeholder="Destination (MXP)" id="track-to">
+                
+                <button class="btn-track" onclick="trackFlights()">🔍 Track Flights</button>
+
+                <div style="margin-top: 2rem;">
+                    <h3 style="color: #c5ff68; font-size: 1.1rem; margin-bottom: 1rem;">✈️ Live Flights (<span id="flight-count">5</span>)</h3>
+                    <div id="flights-list">
+                        <div class="flight-item">
+                            <div style="font-weight: 700; margin-bottom: 0.25rem;">UA 987</div>
+                            <div style="font-size: 0.9rem; color: #8a99b3;">JFK → LHR</div>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: #8a99b3;">
+                                <span>⬆️ 38k ft</span>
+                                <span>🚀 520 kt</span>
+                            </div>
+                        </div>
+                        <div class="flight-item">
+                            <div style="font-weight: 700; margin-bottom: 0.25rem;">AF 447</div>
+                            <div style="font-size: 0.9rem; color: #8a99b3;">CDG → JFK</div>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: #8a99b3;">
+                                <span>⬆️ 35k ft</span>
+                                <span>🚀 485 kt</span>
+                            </div>
+                        </div>
+                        <div class="flight-item">
+                            <div style="font-weight: 700; margin-bottom: 0.25rem;">DL 256</div>
+                            <div style="font-size: 0.9rem; color: #8a99b3;">ATL → AMS</div>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: #8a99b3;">
+                                <span>⬆️ 37k ft</span>
+                                <span>🚀 510 kt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="tracker-map">
+                <canvas class="map-canvas" id="map-canvas"></canvas>
+                
+                <div class="map-stats">
+                    <div class="stat-box">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">Flights Tracked</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Airlines</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="./script.js"></script>
+    <script>
+        const canvas = document.getElementById('map-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            drawMap();
+        }
+        
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid
+            ctx.strokeStyle = '#2a3644';
+            ctx.lineWidth = 1;
+            for (let i = -90; i <= 90; i += 30) {
+                const y = canvas.height * (90 - i) / 180;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            for (let i = -180; i <= 180; i += 30) {
+                const x = canvas.width * (i + 180) / 360;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Draw sample planes
+            drawPlane(canvas.width * 0.3, canvas.height * 0.4, 45);
+            drawPlane(canvas.width * 0.6, canvas.height * 0.3, 90);
+            drawPlane(canvas.width * 0.5, canvas.height * 0.6, 180);
+        }
+        
+        function drawPlane(x, y, heading) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate((heading - 90) * Math.PI / 180);
+            ctx.fillStyle = '#c5ff68';
+            ctx.beginPath();
+            ctx.moveTo(0, -10);
+            ctx.lineTo(8, 10);
+            ctx.lineTo(0, 6);
+            ctx.lineTo(-8, 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function trackFlights() {
+            alert('Live tracking will be enabled when FlightRadar24 API is integrated!');
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
