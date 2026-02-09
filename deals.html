@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hot Deals - Award Flights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./enhancements.css">
+</head>
+<body>
+    <div class="scroll-progress"></div>
+    
+    <header class="header">
+        <div class="container-header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon"></div>
+                <span>Award Flights</span>
+            </a>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="search.html">Search Flights</a>
+                <a href="calculator.html">Points Calculator</a>
+                <a href="deals.html" class="active">Hot Deals</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-secondary">Sign In</button>
+                <button class="btn-primary">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <main style="min-height: 100vh; padding-top: 120px; padding-bottom: 4rem;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem;">
+                    🔥 <span style="background: linear-gradient(135deg, #c5ff68, #4a9cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hot Deals</span> This Week
+                </h1>
+                <p style="font-size: 1.25rem; color: #8a99b3;">Premium routes at economy prices</p>
+            </div>
+
+            <div class="deals-grid">
+                <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200') center/cover;">
+                    <div class="deal-content">
+                        <h3>New York to Paris</h3>
+                        <div class="deal-route">JFK → CDG</div>
+                        <div class="deal-price">
+                            <span class="from">from</span>
+                            <span class="points">50,000</span>
+                            <span class="label">points</span>
+                        </div>
+                        <div class="deal-class">Business Class</div>
+                        <button class="btn-view-deal" onclick="window.location.href='search.html?from=JFK&to=CDG'">View Deal →</button>
+                    </div>
+                </div>
+
+                <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=1200') center/cover;">
+                    <div class="deal-content">
+                        <h3>Chicago to Maldives</h3>
+                        <div class="deal-route">ORD → MLE</div>
+                        <div class="deal-price">
+                            <span class="from">from</span>
+                            <span class="points">70,000</span>
+                            <span class="label">points</span>
+                        </div>
+                        <div class="deal-class">Business Class</div>
+                        <button class="btn-view-deal" onclick="window.location.href='search.html?from=ORD&to=MLE'">View Deal →</button>
+                    </div>
+                </div>
+
+                <div class="deal-card" style="background: linear-gradient(135deg, rgba(10, 15, 30, 0.8), rgba(26, 35, 50, 0.8)), url('https://images.unsplash.com/photo-1493780474015-ba834fd0ce2f?w=1200') center/cover;">
+                    <div class="deal-content">
+                        <h3>LA to Tokyo</h3>
+                        <div class="deal-route">LAX → NRT</div>
+                        <div class="deal-price">
+                            <span class="from">from</span>
+                            <span class="points">60,000</span>
+                            <span class="label">points</span>
+                        </div>
+                        <div class="deal-class">Business Class</div>
+                        <button class="btn-view-deal" onclick="window.location.href='search.html?from=LAX&to=NRT'">View Deal →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="./script.js"></script>
+    <script src="./enhancements.js"></script>
+</body>
+</html>
