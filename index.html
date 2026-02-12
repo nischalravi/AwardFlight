@@ -312,5 +312,58 @@
 
         console.log('✅ Award Flights homepage loaded');
     </script>
+    <script>
+// Airport Autocomplete Fix
+let airports = [];
+
+fetch('https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat')
+    .then(res => res.text())
+    .then(data => {
+        airports = data.split('\n')
+            .filter(line => line.trim())
+            .map(line => {
+                const parts = line.split(',').map(p => p.replace(/"/g, ''));
+                return { iata: parts[4], city: parts[2], name: parts[1], country: parts[3] };
+            })
+            .filter(a => a.iata && a.iata.length === 3);
+        
+        console.log('✅ Loaded', airports.length, 'airports');
+        
+        // Setup autocomplete
+        ['input-from', 'input-to'].forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
+            
+            const dropdown = document.createElement('div');
+            dropdown.style.cssText = 'position:absolute; top:100%; left:0; right:0; background:#1e2836; border:1px solid #2a3644; border-radius:12px; margin-top:0.5rem; max-height:300px; overflow-y:auto; z-index:1000; display:none;';
+            input.parentElement.style.position = 'relative';
+            input.parentElement.appendChild(dropdown);
+            
+            input.addEventListener('input', function() {
+                const q = this.value.toLowerCase();
+                if (q.length < 1) { dropdown.style.display = 'none'; return; }
+                
+                const matches = airports.filter(a => 
+                    a.iata.toLowerCase().includes(q) ||
+                    a.city.toLowerCase().includes(q)
+                ).slice(0, 8);
+                
+                if (matches.length === 0) { dropdown.style.display = 'none'; return; }
+                
+                dropdown.innerHTML = matches.map(a => 
+                    `<div onclick="document.getElementById('${id}').value='${a.iata} - ${a.city}'; this.parentElement.style.display='none'" 
+                          style="padding:1rem; cursor:pointer; border-bottom:1px solid #2a3644"
+                          onmouseover="this.style.background='#0a0f1e'"
+                          onmouseout="this.style.background='transparent'">
+                        <div style="font-weight:700; color:#c5ff68">${a.iata} - ${a.city}</div>
+                        <div style="font-size:0.85rem; color:#8a99b3">${a.name}</div>
+                    </div>`
+                ).join('');
+                
+                dropdown.style.display = 'block';
+            });
+        });
+    });
+</script>
 </body>
 </html>
