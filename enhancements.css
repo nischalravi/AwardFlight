@@ -791,3 +791,31 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Enhanced Search Widget - Improved UX */
+.search-widget {
+    background: rgba(26, 35, 50, 0.95) !important;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.swap-btn {
+    background: linear-gradient(135deg, #1e2836, #2a3644);
+    transition: all 0.4s;
+}
+
+.swap-btn:hover {
+    background: linear-gradient(135deg, #c5ff68, #a8e050);
+    color: #0a0f1e;
+    transform: rotate(180deg) scale(1.1);
+}
+
+.btn-search {
+    background: linear-gradient(135deg, #4a9cff, #357abd) !important;
+}
+
+.btn-search:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(74, 156, 255, 0.4);
+}
+
