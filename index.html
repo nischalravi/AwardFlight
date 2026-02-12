@@ -117,8 +117,8 @@
                             <div>
                                 <label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Travelers</label>
                                 <select id="passengers" style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;">
-                                    <option>1 traveler</option>
-                                    <option selected>2 travelers</option>
+                                    <option selected>1 traveler</option>
+                                    <option>2 travelers</option>
                                     <option>3 travelers</option>
                                     <option>4+ travelers</option>
                                 </select>
@@ -127,9 +127,9 @@
                             <div>
                                 <label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Cabin class</label>
                                 <select id="cabin" style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;">
-                                    <option>Economy</option>
+                                    <option selected>Economy</option>
                                     <option>Premium Economy</option>
-                                    <option selected>Business</option>
+                                    <option>Business</option>
                                     <option>First Class</option>
                                 </select>
                             </div>
@@ -334,8 +334,8 @@
         
         form.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Travelers</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option>1 traveler</option><option selected>2 travelers</option><option>3 travelers</option></select></div>
-                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Cabin class</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option>Economy</option><option selected>Business</option><option>First Class</option></select></div>
+                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Travelers</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option selected>1 traveler</option><option>2 travelers</option><option>3 travelers</option></select></div>
+                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Cabin class</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option selected>Economy</option><option>Business</option><option>First Class</option></select></div>
             </div>
             <div id="flights-container"></div>
             <button type="button" onclick="addFlight()" style="display: flex; align-items: center; gap: 0.5rem; background: transparent; border: 1px dashed #4a9cff; color: #4a9cff; padding: 1rem; border-radius: 12px; width: 100%; justify-content: center; cursor: pointer; font-weight: 600; margin-bottom: 1.5rem; font-family: inherit;">+ Add another flight</button>
