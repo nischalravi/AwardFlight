@@ -305,7 +305,10 @@
         window.location.href = `search.html?from=${from}&to=${to}&passengers=2&class=business`;
     });
 
-    // Tab switching
+    // Tab switching with Multi-City support
+    let flightCount = 2;
+    let airportsData = airports; // Reference to loaded airports
+
     document.querySelectorAll('.tab-btn').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.tab-btn').forEach(t => {
@@ -314,8 +317,100 @@
             });
             this.style.color = '#c5ff68';
             this.style.borderBottom = '3px solid #c5ff68';
+            
+            // Switch form based on tab
+            const tabType = this.dataset.tab;
+            if (tabType === 'multicity') {
+                showMultiCityForm();
+            } else if (tabType === 'roundtrip' || tabType === 'oneway') {
+                showStandardForm();
+            }
         });
     });
+
+    function showMultiCityForm() {
+        const form = document.getElementById('search-form');
+        flightCount = 2;
+        
+        form.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Travelers</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option>1 traveler</option><option selected>2 travelers</option><option>3 travelers</option></select></div>
+                <div><label style="display: block; font-size: 0.9rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Cabin class</label><select style="width: 100%; padding: 1.125rem 1.25rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 1rem; font-family: inherit;"><option>Economy</option><option selected>Business</option><option>First Class</option></select></div>
+            </div>
+            <div id="flights-container"></div>
+            <button type="button" onclick="addFlight()" style="display: flex; align-items: center; gap: 0.5rem; background: transparent; border: 1px dashed #4a9cff; color: #4a9cff; padding: 1rem; border-radius: 12px; width: 100%; justify-content: center; cursor: pointer; font-weight: 600; margin-bottom: 1.5rem; font-family: inherit;">+ Add another flight</button>
+            <button type="submit" style="width: 100%; padding: 1.5rem; background: linear-gradient(135deg, #c5ff68, #a8e050); color: #0a0f1e; border: none; border-radius: 15px; font-size: 1.3rem; font-weight: 800; cursor: pointer; font-family: inherit;">🔍 Search Flights</button>
+        `;
+        
+        for (let i = 1; i <= 2; i++) addFlightRow(i);
+        setTimeout(() => reinitAutocomplete(), 50);
+    }
+
+    function addFlightRow(num) {
+        document.getElementById('flights-container').insertAdjacentHTML('beforeend', `
+            <div id="flight-${num}" style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #2a3644;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <h4 style="color: #c5ff68; margin: 0;">Flight ${num}</h4>
+                    ${num > 2 ? `<button type="button" onclick="removeFlight(${num})" style="background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem;">Remove</button>` : ''}
+                </div>
+                <div style="display: grid; grid-template-columns: 1.5fr auto 1.5fr 1fr; gap: 1rem; align-items: end;">
+                    <div style="position: relative;"><label style="display: block; font-size: 0.85rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Leaving from</label><input type="text" id="multi-from-${num}" placeholder="BOS - Boston" class="input-airport" style="width: 100%; padding: 1rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 0.95rem; font-family: inherit;" autocomplete="off"></div>
+                    <button type="button" onclick="swapMulti(${num})" style="width: 40px; height: 40px; background: #2a3644; border: none; border-radius: 50%; color: #c5ff68; font-size: 1.1rem; cursor: pointer; margin-bottom: 0.125rem;">⇄</button>
+                    <div style="position: relative;"><label style="display: block; font-size: 0.85rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Going to</label><input type="text" id="multi-to-${num}" placeholder="JFK - New York" class="input-airport" style="width: 100%; padding: 1rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 0.95rem; font-family: inherit;" autocomplete="off"></div>
+                    <div><label style="display: block; font-size: 0.85rem; color: #8a99b3; margin-bottom: 0.5rem; font-weight: 600;">Date</label><input type="date" id="multi-date-${num}" style="width: 100%; padding: 1rem; background: #0a0f1e; border: 2px solid #2a3644; border-radius: 12px; color: #ffffff; font-size: 0.95rem; font-family: inherit;"></div>
+                </div>
+            </div>
+        `);
+    }
+
+    function addFlight() {
+        if (flightCount >= 6) { alert('Max 6 flights'); return; }
+        flightCount++;
+        addFlightRow(flightCount);
+        reinitAutocomplete();
+    }
+
+    function removeFlight(num) {
+        document.getElementById('flight-' + num).remove();
+        flightCount--;
+    }
+
+    function swapMulti(num) {
+        const from = document.getElementById('multi-from-' + num);
+        const to = document.getElementById('multi-to-' + num);
+        const temp = from.value;
+        from.value = to.value;
+        to.value = temp;
+    }
+
+    function showStandardForm() {
+        location.reload(); // Quick way to reset form
+    }
+
+    function reinitAutocomplete() {
+        document.querySelectorAll('.input-airport').forEach(input => {
+            const dd = document.createElement('div');
+            dd.style.cssText = 'position:absolute; top:calc(100% + 0.5rem); left:0; right:0; background:#1e2836; border:2px solid #c5ff68; border-radius:12px; max-height:260px; overflow-y:auto; z-index:9999; display:none; box-shadow:0 10px 40px rgba(0,0,0,0.7)';
+            
+            if (!input.parentElement.querySelector('[style*="position:absolute"]')) {
+                input.parentElement.style.position = 'relative';
+                input.parentElement.appendChild(dd);
+                
+                input.addEventListener('input', function() {
+                    const q = this.value.toLowerCase();
+                    if (q.length < 1) { dd.style.display = 'none'; return; }
+                    
+                    const m = airportsData.filter(a => a.iata.toLowerCase().includes(q) || a.city.toLowerCase().includes(q)).slice(0, 6);
+                    if (m.length === 0) { dd.style.display = 'none'; return; }
+                    
+                    dd.innerHTML = m.map(a => `<div onclick="this.parentElement.previousElementSibling.value='${a.iata} - ${a.city}'; this.parentElement.style.display='none'" style="padding:0.875rem 1rem; cursor:pointer; border-bottom:1px solid #2a3644" onmouseover="this.style.background='#0a0f1e'" onmouseout="this.style.background='transparent'"><div style="font-weight:700; color:#c5ff68">${a.iata} - ${a.city}</div><div style="font-size:0.8rem; color:#8a99b3">${a.name}</div></div>`).join('');
+                    dd.style.display = 'block';
+                });
+                
+                input.addEventListener('blur', () => setTimeout(() => dd.style.display = 'none', 200));
+            }
+        });
+    }
     </script>
 </body>
 </html>
