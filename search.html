@@ -941,3 +941,30 @@ window.addEventListener('load', () => setTimeout(() => loadRealFlights(), 1000))
 </script>
 </body>
 </html>
+<script>
+async function loadRealFlights() {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from');
+    const to = params.get('to');
+    const date = params.get('departure') || '2026-02-20';
+    
+    if (!from || !to) return;
+    
+    console.log('🔍 Amadeus:', from, '→', to, 'on', date);
+    
+    try {
+        const res = await fetch('/api/amadeus/search?from=' + from + '&to=' + to + '&date=' + date);
+        const data = await res.json();
+        
+        if (data.success && data.flights.length > 0) {
+            console.log('✅ Got', data.count, 'real flights!');
+            window.flightDatabase = data.flights;
+            renderFlights();
+        }
+    } catch (err) {
+        console.error('Error:', err);
+    }
+}
+
+window.addEventListener('load', () => setTimeout(() => loadRealFlights(), 1000));
+</script>
