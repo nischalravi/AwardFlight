@@ -1,299 +1,368 @@
-// public/globe-3d.js
-// Renders a real 3D globe and plots live flights from /api/live/route
-// Depends on these scripts being loaded BEFORE this file:
-// 1) https://unpkg.com/three/build/three.min.js
-// 2) https://unpkg.com/globe.gl
-//
-// Also depends on window.trackFlightsByRoute(from,to) (from live-tracker-client.js)
+/* public/live-tracker-client.js
+   Fixes:
+   - Uses globe-3d.js (globeSetFlights/globeClear) instead of duplicating Globe init (prevents mis-centering + blank canvas)
+   - Fixes resize bug (your old code passed arrays to width/height)
+   - Properly plots flights + shows status + updates pills
+   - Adds optional Flight Number filter (already in your HTML)
+   - Auto-populates IATA from URL params (?from=JFK&to=LHR&flight=BA178) if present
+   - Stronger API response checks + better error surface
+   Requirements:
+   - live-tracker.html has IDs: from, to, flightNumber, btnTrack, btnModify, btnNew, formError,
+     flightsList, pillRoute, pillCount, pillUpdated, trackerSection, formCard, globeStatus, globeHint
+   - public/globe-3d.js loaded AFTER globe.gl and AFTER this file (or at least after trackFlightsByRoute exists)
+*/
 
 (function () {
-  const STATE = {
-    globe: null,
-    scene: null,
-    camera: null,
-    renderer: null,
-    controls: null,
-    animTimer: null,
-    flights: [],
-    selectedId: null
+  const $ = (id) => document.getElementById(id);
+
+  const els = {
+    from: $("from"),
+    to: $("to"),
+    flightNumber: $("flightNumber"),
+    btnTrack: $("btnTrack"),
+    btnModify: $("btnModify"),
+    btnNew: $("btnNew"),
+    formError: $("formError"),
+    flightsList: $("flightsList"),
+    pillRoute: $("pillRoute"),
+    pillCount: $("pillCount"),
+    pillUpdated: $("pillUpdated"),
+    trackerSection: $("trackerSection"),
+    formCard: $("formCard"),
+    globeStatus: $("globeStatus"),
+    globeHint: $("globeHint"),
   };
 
-  // --- Utilities ---
-  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-  const isNum = (v) => Number.isFinite(Number(v));
-  const kmhFromKnots = (kn) => (isNum(kn) ? Math.round(Number(kn) * 1.852) : null);
+  // -----------------------
+  // Helpers
+  // -----------------------
+  const normIata = (v) => String(v || "").trim().toUpperCase();
+  const isIata = (v) => /^[A-Z]{3}$/.test(normIata(v));
+  const normFlight = (v) =>
+    String(v || "").trim().toUpperCase().replace(/\s+/g, "");
 
-  function normalizeFlightNumber(v) {
-    return String(v || "")
-      .trim()
-      .toUpperCase()
-      .replace(/\s+/g, "");
+  function niceTime() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
-  function makePoints(flights) {
-    return (flights || [])
-      .filter((f) => isNum(f.latitude) && isNum(f.longitude))
-      .map((f) => {
-        const alt = Number(f.altitude) || 0; // ft
-        // Keep points visible above surface even if altitude missing
-        const altitude = clamp(alt / 45000, 0.06, 0.7);
-
-        const number = f.number || f.id || "FLIGHT";
-        return {
-          id: String(f.id ?? number),
-          number,
-          airline: f.airline || "",
-          lat: Number(f.latitude),
-          lng: Number(f.longitude),
-          altitude,
-          _raw: f
-        };
-      });
+  function setPills({ route = "—", countText = "0 flights", updated = "Not searched" } = {}) {
+    if (els.pillRoute) els.pillRoute.textContent = route;
+    if (els.pillCount) els.pillCount.textContent = countText;
+    if (els.pillUpdated) els.pillUpdated.textContent = updated;
   }
 
-  function makeArcs(flights) {
-    // Optional: draw direction arcs (short) based on heading
-    return (flights || [])
-      .filter((f) => isNum(f.latitude) && isNum(f.longitude) && isNum(f.heading))
-      .map((f) => {
-        const lat = Number(f.latitude);
-        const lng = Number(f.longitude);
-        const heading = Number(f.heading);
-
-        // Create a tiny arc forward in direction of heading (approx)
-        // This isn't a real route; it’s just a "direction indicator".
-        const step = 2; // degrees-ish small step (visual only)
-        const rad = (heading * Math.PI) / 180;
-        const dLat = (step * Math.cos(rad)) / 10;
-        const dLng = (step * Math.sin(rad)) / 10;
-
-        return {
-          id: String(f.id ?? f.number),
-          startLat: lat,
-          startLng: lng,
-          endLat: lat + dLat,
-          endLng: lng + dLng,
-          _raw: f
-        };
-      });
+  function showError(msg) {
+    if (!els.formError) return;
+    els.formError.style.display = "block";
+    els.formError.textContent = msg;
   }
 
-  function setStatusBadge(text) {
-    const el = document.getElementById("globeStatus");
-    if (el) el.textContent = text;
+  function clearError() {
+    if (!els.formError) return;
+    els.formError.style.display = "none";
+    els.formError.textContent = "";
   }
 
-  function setHint(text) {
-    const el = document.getElementById("globeHint");
-    if (el) el.textContent = text;
+  function setLoading(loading) {
+    if (!els.btnTrack) return;
+    els.btnTrack.disabled = !!loading;
+    els.btnTrack.textContent = loading ? "🔄 Searching..." : "🔍 Track Live Flights";
+
+    if (els.globeStatus) els.globeStatus.textContent = loading ? "Loading…" : "Idle";
+    if (els.globeHint && loading) els.globeHint.textContent = "Fetching flights…";
   }
 
-  function safeCall(fn) {
-    try {
-      return fn();
-    } catch (_) {
-      return null;
-    }
+  function feetLabel(alt) {
+    if (alt == null || Number.isNaN(Number(alt))) return "—";
+    const n = Number(alt);
+    return n >= 1000 ? `${Math.round(n / 1000)}k ft` : `${Math.round(n)} ft`;
   }
 
-  // --- Globe init ---
-  function initGlobe() {
-    const el = document.getElementById("globe");
-    if (!el) return;
+  function kmhLabelFromKnots(kn) {
+    if (kn == null || Number.isNaN(Number(kn))) return "—";
+    return `${Math.round(Number(kn) * 1.852)} km/h`;
+  }
 
-    // Prevent double init
-    if (STATE.globe) return;
+  function hdgLabel(h) {
+    if (h == null || Number.isNaN(Number(h))) return "—";
+    return `${Math.round(Number(h))}°`;
+  }
 
-    if (!window.Globe) {
-      setStatusBadge("Missing globe.gl");
-      setHint("globe.gl did not load. Check script tags.");
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }[c]));
+  }
+
+  // -----------------------
+  // Rendering
+  // -----------------------
+  function renderFlightsList(from, to, flights) {
+    if (!els.flightsList) return;
+    els.flightsList.innerHTML = "";
+
+    if (!flights || !flights.length) {
+      els.flightsList.innerHTML = `
+        <div class="lt-flightCard">
+          <div style="color:#8a99b3; font-weight:800;">No live flights found</div>
+          <div style="color:#8a99b3; margin-top:6px; font-size:0.95rem;">
+            No aircraft currently flying <strong>${escapeHtml(from)} → ${escapeHtml(to)}</strong>.
+          </div>
+        </div>
+      `;
       return;
     }
 
-    // Build globe
-    const globe = Globe()(el)
-      .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-dark.jpg")
-      .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
-      .backgroundColor("rgba(0,0,0,0)")
-      .showAtmosphere(true)
-      .atmosphereColor("#4a9cff")
-      .atmosphereAltitude(0.12)
+    flights.forEach((f) => {
+      const num = f.number || f.id || "—";
+      const airline = f.airline || "N/A";
 
-      // Points (flights)
-      .pointsData([])
-      .pointLat((d) => d.lat)
-      .pointLng((d) => d.lng)
-      .pointAltitude((d) => d.altitude)
-      .pointRadius(() => 0.18)
-      .pointResolution(8)
-      .pointColor((d) => (d.id === STATE.selectedId ? "#c5ff68" : "#4a9cff"))
-      .pointsMerge(true)
+      const card = document.createElement("div");
+      card.className = "lt-flightCard";
+      card.innerHTML = `
+        <div class="lt-flightTop">
+          <div class="lt-flightNum">${escapeHtml(num)}</div>
+          <div class="lt-badge">${escapeHtml(airline)}</div>
+        </div>
+        <div class="lt-flightRoute">${escapeHtml(f.origin || from)} → ${escapeHtml(f.destination || to)}</div>
+        <div class="lt-metrics">
+          <div><span>Altitude</span><strong>${feetLabel(f.altitude)}</strong></div>
+          <div><span>Speed</span><strong>${kmhLabelFromKnots(f.speed)}</strong></div>
+          <div><span>Heading</span><strong>${hdgLabel(f.heading)}</strong></div>
+        </div>
+      `;
 
-      // Hover label
-      .pointLabel((d) => {
-        const f = d?._raw || {};
-        const num = f.number || f.id || "Flight";
-        const alt = isNum(f.altitude) ? `${Math.round(Number(f.altitude) / 1000)}k ft` : "—";
-        const spd = isNum(f.speed) ? `${kmhFromKnots(f.speed)} km/h` : "—";
-        const head = isNum(f.heading) ? `${Math.round(Number(f.heading))}°` : "—";
-        return `
-          <div style="font-family: Outfit, system-ui; padding: 8px 10px;">
-            <div style="font-weight:800; color:#c5ff68; margin-bottom:4px;">${num}</div>
-            <div style="color:#8a99b3; font-size:12px;">Alt: <b style="color:#fff">${alt}</b> • Spd: <b style="color:#fff">${spd}</b> • Hdg: <b style="color:#fff">${head}</b></div>
-          </div>
-        `;
-      })
+      // Optional: click selects on globe (if globe-3d.js exposes selection handler)
+      card.addEventListener("click", () => {
+        if (typeof window.onGlobeSelectFlight === "function") window.onGlobeSelectFlight(f);
+      });
 
-      // Arcs (direction indicators)
-      .arcsData([])
-      .arcStartLat((d) => d.startLat)
-      .arcStartLng((d) => d.startLng)
-      .arcEndLat((d) => d.endLat)
-      .arcEndLng((d) => d.endLng)
-      .arcColor(() => ["rgba(197,255,104,0.85)", "rgba(74,156,255,0.15)"])
-      .arcStroke(() => 0.9)
-      .arcDashLength(() => 0.4)
-      .arcDashGap(() => 2.2)
-      .arcDashAnimateTime(() => 1200);
+      els.flightsList.appendChild(card);
+    });
+  }
 
-    // Save references for sizing / centering fixes
-    const renderer = globe.renderer();
-    const scene = globe.scene();
-    const camera = globe.camera();
-    const controls = globe.controls();
+  function renderErrorCard(message) {
+    if (!els.flightsList) return;
+    els.flightsList.innerHTML = `
+      <div class="lt-flightCard">
+        <div style="color:#ffd2cf; font-weight:900;">Search failed</div>
+        <div style="color:#8a99b3; margin-top:6px;">${escapeHtml(message)}</div>
+      </div>
+    `;
+  }
 
-    STATE.globe = globe;
-    STATE.scene = scene;
-    STATE.camera = camera;
-    STATE.renderer = renderer;
-    STATE.controls = controls;
-
-    // Nice controls defaults
-    if (controls) {
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.08;
-      controls.rotateSpeed = 0.5;
-      controls.minDistance = 140;
-      controls.maxDistance = 520;
-      controls.enablePan = false;
+  // -----------------------
+  // API call (uses trackFlightsByRoute from globe-3d.js or your helper)
+  // -----------------------
+  async function getFlights(from, to) {
+    // Prefer the helper if present
+    if (typeof window.trackFlightsByRoute === "function") {
+      const r = await window.trackFlightsByRoute(from, to);
+      if (!r || !r.success) {
+        const msg = r?.error || "Live route request failed";
+        throw new Error(msg);
+      }
+      return Array.isArray(r.flights) ? r.flights : [];
     }
 
-    // Center the globe reliably
-    safeCall(() => globe.pointOfView({ lat: 20, lng: 0, altitude: 1.9 }, 0));
-    setTimeout(() => safeCall(() => globe.pointOfView(globe.pointOfView(), 0)), 50);
-    setTimeout(() => safeCall(() => globe.pointOfView(globe.pointOfView(), 0)), 250);
+    // Fallback (shouldn’t happen if your setup is correct)
+    const url = `/api/live/route?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    const ct = res.headers.get("content-type") || "";
+    const text = await res.text();
 
-    // Handle resize
-    const onResize = () => safeCall(() => globe.width(el.clientWidth).height(el.clientHeight));
-    window.addEventListener("resize", onResize, { passive: true });
-    setTimeout(onResize, 0);
+    if (!ct.includes("application/json")) {
+      throw new Error(`API returned non-JSON (HTTP ${res.status}). Is /api/live/route deployed?`);
+    }
 
-    // Click selects flight (optional)
-    globe.onPointClick((p) => {
-      STATE.selectedId = p?.id || null;
-      // Re-apply data to force recolor
-      const pts = makePoints(STATE.flights);
-      globe.pointsData(pts);
+    const data = JSON.parse(text);
+    if (!res.ok || data?.success === false) {
+      throw new Error(data?.error || `Live route error (HTTP ${res.status})`);
+    }
 
-      // Inform UI if you have a handler
-      if (typeof window.onGlobeSelectFlight === "function") {
-        window.onGlobeSelectFlight(p?._raw || null);
-      }
+    return Array.isArray(data.flights) ? data.flights : [];
+  }
+
+  // -----------------------
+  // Search flow
+  // -----------------------
+  async function runSearch({ scrollIntoView = true } = {}) {
+    clearError();
+
+    const from = normIata(els.from?.value);
+    const to = normIata(els.to?.value);
+    const flightFilter = normFlight(els.flightNumber?.value);
+
+    if (!isIata(from) || !isIata(to)) {
+      showError("Please enter valid 3-letter IATA codes (e.g., JFK, LHR).");
+      return;
+    }
+    if (from === to) {
+      showError("Origin and destination cannot be the same.");
+      return;
+    }
+
+    setPills({
+      route: `${from} → ${to}`,
+      countText: "Searching…",
+      updated: `Updated ${niceTime()}`,
     });
 
-    setStatusBadge("Idle");
-    setHint("Search a route to plot flights. Drag to rotate.");
+    if (els.globeStatus) els.globeStatus.textContent = "Loading…";
+    if (els.globeHint) els.globeHint.textContent = `Fetching flights for ${from} → ${to}…`;
+
+    if (scrollIntoView && els.trackerSection) {
+      els.trackerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    setLoading(true);
+
+    try {
+      let flights = await getFlights(from, to);
+
+      // Optional flight number filter (loose)
+      if (flightFilter) {
+        flights = flights.filter((f) => {
+          const n = normFlight(f.number);
+          return n.includes(flightFilter) || n.endsWith(flightFilter);
+        });
+      }
+
+      setPills({
+        route: `${from} → ${to}`,
+        countText: `${flights.length} flight${flights.length === 1 ? "" : "s"}`,
+        updated: `Updated ${niceTime()}`,
+      });
+
+      renderFlightsList(from, to, flights);
+
+      // Plot on globe via globe-3d.js (single source of truth)
+      if (typeof window.globeSetFlights === "function") {
+        await window.globeSetFlights({ from, to, flightNumber: flightFilter });
+      } else {
+        // If globe-3d.js isn't loaded, at least don't crash
+        if (els.globeStatus) els.globeStatus.textContent = flights.length ? "Live" : "No flights";
+        if (els.globeHint) els.globeHint.textContent = "Globe not available (globe-3d.js missing).";
+      }
+
+      if (els.globeStatus) els.globeStatus.textContent = flights.length ? "Live" : "No flights";
+    } catch (err) {
+      console.error(err);
+      setPills({
+        route: `${from} → ${to}`,
+        countText: "Search failed",
+        updated: `Updated ${niceTime()}`,
+      });
+
+      if (els.globeStatus) els.globeStatus.textContent = "Error";
+      if (els.globeHint) els.globeHint.textContent = "Couldn’t load live flights.";
+      showError(err.message || "Search failed");
+      renderErrorCard(err.message || "Search failed");
+
+      if (typeof window.globeClear === "function") window.globeClear();
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // --- Public API used by live-tracker-client.js ---
-  async function globeSetFlights({ from, to, flightNumber }) {
-    initGlobe();
-    if (!STATE.globe) return;
+  // -----------------------
+  // Controls
+  // -----------------------
+  function bindUI() {
+    if (els.btnTrack) els.btnTrack.addEventListener("click", () => runSearch({ scrollIntoView: true }));
 
-    const fno = normalizeFlightNumber(flightNumber);
-
-    setStatusBadge("Loading…");
-    setHint(`Fetching flights for ${from} → ${to}…`);
-
-    if (typeof window.trackFlightsByRoute !== "function") {
-      setStatusBadge("Error");
-      setHint("trackFlightsByRoute() is missing. Check live-tracker-client.js include order.");
-      return;
-    }
-
-    const result = await window.trackFlightsByRoute(from, to);
-
-    if (!result?.success) {
-      setStatusBadge("Error");
-      setHint(result?.error || "Live route request failed");
-      STATE.globe.pointsData([]);
-      STATE.globe.arcsData([]);
-      STATE.flights = [];
-      return;
-    }
-
-    let flights = Array.isArray(result.flights) ? result.flights : [];
-
-    // Optional flight number filter (matches BA178, BAW178, etc loosely)
-    if (fno) {
-      flights = flights.filter((f) => {
-        const n = normalizeFlightNumber(f.number);
-        if (!n) return false;
-        // Loose match: contains typed token or ends with typed token
-        return n.includes(fno) || n.endsWith(fno);
+    if (els.btnModify) {
+      els.btnModify.addEventListener("click", () => {
+        if (!els.formCard) return;
+        els.formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => els.from?.focus(), 250);
       });
     }
 
-    STATE.flights = flights;
+    if (els.btnNew) {
+      els.btnNew.addEventListener("click", () => {
+        if (els.from) els.from.value = "JFK";
+        if (els.to) els.to.value = "LHR";
+        if (els.flightNumber) els.flightNumber.value = "";
+        clearError();
 
-    const pts = makePoints(flights);
-    const arcs = makeArcs(flights);
+        if (els.flightsList) els.flightsList.innerHTML = "";
+        setPills({ route: "—", countText: "0 flights", updated: "Not searched" });
 
-    STATE.globe.pointsData(pts);
-    STATE.globe.arcsData(arcs);
+        if (els.globeStatus) els.globeStatus.textContent = "Idle";
+        if (els.globeHint) els.globeHint.textContent = "Search a route to plot flights. Drag to rotate.";
 
-    // Auto-center camera on the first flight (or just reset view)
-    if (pts.length) {
-      const first = pts[0];
-      safeCall(() => STATE.globe.pointOfView({ lat: first.lat, lng: first.lng, altitude: 1.8 }, 900));
-      setStatusBadge("Live");
-      setHint(`Showing ${pts.length} flight${pts.length === 1 ? "" : "s"} for ${from} → ${to}`);
-    } else {
-      safeCall(() => STATE.globe.pointOfView({ lat: 20, lng: 0, altitude: 1.9 }, 700));
-      setStatusBadge("No flights");
-      setHint(`No live flights to plot for ${from} → ${to}${fno ? ` (filter: ${fno})` : ""}.`);
+        if (typeof window.globeClear === "function") window.globeClear();
+
+        if (els.formCard) els.formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => els.from?.focus(), 250);
+      });
     }
 
-    // If your UI needs the list
-    if (typeof window.onGlobeFlightsUpdated === "function") {
-      window.onGlobeFlightsUpdated(flights);
+    // Enter triggers search
+    [els.from, els.to, els.flightNumber].filter(Boolean).forEach((inp) => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          runSearch({ scrollIntoView: true });
+        }
+      });
+    });
+
+    // Force IATA formatting
+    [els.from, els.to].filter(Boolean).forEach((inp) => {
+      inp.addEventListener("input", () => {
+        inp.value = normIata(inp.value).replace(/[^A-Z]/g, "").slice(0, 3);
+      });
+    });
+
+    // Flight number formatting (lenient)
+    if (els.flightNumber) {
+      els.flightNumber.addEventListener("input", () => {
+        els.flightNumber.value = normFlight(els.flightNumber.value).slice(0, 10);
+      });
     }
   }
 
-  // Optional helper for clearing globe
-  function globeClear() {
-    initGlobe();
-    if (!STATE.globe) return;
-    STATE.flights = [];
-    STATE.selectedId = null;
-    STATE.globe.pointsData([]);
-    STATE.globe.arcsData([]);
-    setStatusBadge("Idle");
-    setHint("Search a route to plot flights. Drag to rotate.");
-    safeCall(() => STATE.globe.pointOfView({ lat: 20, lng: 0, altitude: 1.9 }, 600));
+  function applyQueryParams() {
+    const p = new URLSearchParams(window.location.search);
+    const qFrom = normIata(p.get("from"));
+    const qTo = normIata(p.get("to"));
+    const qFlight = normFlight(p.get("flight"));
+
+    if (qFrom && els.from) els.from.value = isIata(qFrom) ? qFrom : els.from.value;
+    if (qTo && els.to) els.to.value = isIata(qTo) ? qTo : els.to.value;
+    if (qFlight && els.flightNumber) els.flightNumber.value = qFlight;
+
+    // Auto-search if both are present
+    if (isIata(qFrom) && isIata(qTo)) {
+      setTimeout(() => runSearch({ scrollIntoView: false }), 120);
+    }
   }
 
-  // Expose
-  window.globeSetFlights = globeSetFlights;
-  window.globeClear = globeClear;
-
-  // Auto-init on load (safe)
+  // -----------------------
+  // Boot
+  // -----------------------
   window.addEventListener("DOMContentLoaded", () => {
-    initGlobe();
+    bindUI();
+    applyQueryParams();
 
-    // If the page already has default IATA values and wants immediate render, you can uncomment:
-    // const from = document.getElementById("originIata")?.value?.trim()?.toUpperCase();
-    // const to = document.getElementById("destIata")?.value?.trim()?.toUpperCase();
-    // if (from && to) globeSetFlights({ from, to, flightNumber: "" });
+    // Safe defaults
+    if (els.from && !els.from.value) els.from.value = "JFK";
+    if (els.to && !els.to.value) els.to.value = "LHR";
+
+    if (els.globeStatus && !els.globeStatus.textContent) els.globeStatus.textContent = "Idle";
+    if (els.globeHint && !els.globeHint.textContent) {
+      els.globeHint.textContent = "Search a route to plot flights. Drag to rotate.";
+    }
+
+    // If globe script is loaded, ensure it initializes
+    if (typeof window.globeSetFlights === "function") {
+      // no-op; globe-3d.js auto-inits on DOMContentLoaded too
+    }
   });
 })();
