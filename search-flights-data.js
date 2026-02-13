@@ -232,3 +232,7 @@ window.flightDatabase = flightDatabase;
 // Export to window
 window.flightDatabase = flightDatabase;
 console.log('✅ Loaded', flightDatabase.length, 'flights');
+
+window.flightDatabase = flightDatabase;
+console.log('✅ Flights loaded:', flightDatabase.length);
+

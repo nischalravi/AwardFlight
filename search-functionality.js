@@ -445,3 +445,5 @@ console.log('✅ Search page initialized with award miles data');
 window.renderFlights = renderFlights;
 window.applyFilters = applyFilters;
 console.log('✅ Search ready');
+window.renderFlights = renderFlights;
+console.log('✅ Render function ready');
