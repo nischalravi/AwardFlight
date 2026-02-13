@@ -277,12 +277,16 @@
 
           <div class="lt-field">
             <label class="lt-label" for="from">Origin (IATA)</label>
-            <input class="lt-input" id="from" inputmode="latin" autocomplete="off" placeholder="JFK" value="JFK" maxlength="3" />
+            <input class="lt-input" id="from" list="airports_from_list" inputmode="latin" autocomplete="off" placeholder="JFK" value="JFK" maxlength="3" />
+            <datalist id="airports_from_list"></datalist>
+            <datalist id="airports_from_list"></datalist>
           </div>
 
           <div class="lt-field">
             <label class="lt-label" for="to">Destination (IATA)</label>
-            <input class="lt-input" id="to" inputmode="latin" autocomplete="off" placeholder="LHR" value="LHR" maxlength="3" />
+            <input class="lt-input" id="to" list="airports_to_list" inputmode="latin" autocomplete="off" placeholder="LHR" value="LHR" maxlength="3" />
+            <datalist id="airports_to_list"></datalist>
+            <datalist id="airports_to_list"></datalist>
           </div>
 
           <div class="lt-field">
@@ -328,10 +332,8 @@
 <script src="https://unpkg.com/globe.gl@2.37.1/dist/globe.gl.min.js"></script>
 
 <script src="./globe-3d.js"></script>
-
 <script src="./AIRPORT_DATA_GUIDE.js"></script>
 <script src="./airport-loader.js"></script>
-
 <script src="./live-tracker-client.js"></script>
 
 </body>

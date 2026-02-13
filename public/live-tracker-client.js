@@ -1,7 +1,7 @@
 /* public/live-tracker-client.js
-   - Airport autocomplete via <datalist id="airportOptions">
-   - Allows searching by city/airport name, extracts IATA on submit
-   - Uses AwardGlobe (public/globe-3d.js) for 3D rendering
+   - Uses window.AwardGlobe (from globe-3d.js)
+   - Adds airport autocomplete using AIRPORT_DATA_GUIDE.js (if present)
+   - Route search + optional flight number filter
 */
 
 (function () {
@@ -16,6 +16,7 @@
     btnNew: $("btnNew"),
     formError: $("formError"),
     flightsList: $("flightsList"),
+    globeEl: $("globe"),
     globeStatus: $("globeStatus"),
     globeSub: $("globeSub"),
     pillRoute: $("pillRoute"),
@@ -23,16 +24,17 @@
     pillUpdated: $("pillUpdated"),
     trackerSection: $("trackerSection"),
     formCard: $("formCard"),
-    airportOptions: $("airportOptions"),
   };
 
-  // -----------------------
-  // Helpers
-  // -----------------------
+  function normIata(v) {
+    return String(v || "").trim().toUpperCase();
+  }
+  function isIata(v) {
+    return /^[A-Z]{3}$/.test(normIata(v));
+  }
   function niceTime() {
     return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
-
   function showError(msg) {
     els.formError.style.display = "block";
     els.formError.textContent = msg;
@@ -41,141 +43,124 @@
     els.formError.style.display = "none";
     els.formError.textContent = "";
   }
-
   function setLoading(loading) {
     els.btnTrack.disabled = loading;
     els.btnTrack.textContent = loading ? "🔄 Searching..." : "🔍 Track Live Flights";
-    els.globeStatus.textContent = loading ? "Loading" : els.globeStatus.textContent;
+    els.globeStatus.textContent = loading ? "Loading" : "Idle";
   }
 
-  function escapeHtml(s) {
-    return String(s || "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[m]));
+  // ----------------------------
+  // Airport Autocomplete
+  // ----------------------------
+  function normalizeText(s) {
+    return String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
   }
 
-  // Accept values like:
-  // - "BOS"
-  // - "BOS - Boston Logan International Airport (United States)"
-  // - "Boston (BOS)"
-  function extractIata(value) {
-    const v = String(value || "").trim().toUpperCase();
-    if (!v) return "";
-    // exact 3-letter
-    if (/^[A-Z]{3}$/.test(v)) return v;
-    // find first IATA-like code
-    const m = v.match(/\b([A-Z]{3})\b/);
-    return m ? m[1] : "";
+  // Accept a few likely shapes. Your AIRPORT_DATA_GUIDE.js might export different structures.
+  function getAirportDataset() {
+    const g = window.AIRPORT_DATA_GUIDE;
+    if (!g) return [];
+    if (Array.isArray(g)) return g;
+    if (Array.isArray(g.airports)) return g.airports;
+    if (Array.isArray(g.data)) return g.data;
+    return [];
   }
 
-  function normFlightNumber(v) {
-    return String(v || "").trim().toUpperCase().replace(/\s+/g, "");
+  function airportLabel(a) {
+    // Try best-effort fields
+    const code = (a.iata || a.IATA || a.code || a.iata_code || "").toString().toUpperCase();
+    const city = (a.city || a.municipality || a.name || a.location || "").toString();
+    const airport = (a.airport || a.name || a.airportName || "").toString();
+    const country = (a.country || a.country_name || a.iso_country || "").toString();
+    const title = airport && airport !== city ? `${code} — ${city} (${airport})` : `${code} — ${city}`;
+    const suffix = country ? `, ${country}` : "";
+    return `${title}${suffix}`.trim();
   }
 
-  function feetFromAltitude(alt) {
-    if (alt == null || Number.isNaN(Number(alt))) return "—";
+  function airportCode(a) {
+    return (a.iata || a.IATA || a.code || a.iata_code || "").toString().toUpperCase();
+  }
+
+  function buildDatalist(inputEl, id) {
+    let dl = document.getElementById(id);
+    if (!dl) {
+      dl = document.createElement("datalist");
+      dl.id = id;
+      document.body.appendChild(dl);
+    }
+    inputEl.setAttribute("list", id);
+    return dl;
+  }
+
+  function attachAirportAutocomplete(inputEl, listId) {
+    const dl = buildDatalist(inputEl, listId);
+    const dataset = getAirportDataset();
+
+    // If no dataset, do nothing (page still works with 3-letter IATA)
+    if (!dataset.length) return;
+
+    inputEl.addEventListener("input", () => {
+      const q = normalizeText(inputEl.value);
+      if (!q || q.length < 2) {
+        dl.innerHTML = "";
+        return;
+      }
+
+      // Find matches by code or city/name
+      const matches = dataset
+        .map((a) => {
+          const code = airportCode(a);
+          const label = airportLabel(a);
+          const hay = normalizeText(`${code} ${label} ${a.city || ""} ${a.name || ""} ${a.country || ""}`);
+          let score = 0;
+          if (code.toLowerCase().startsWith(q)) score += 100;
+          if (hay.includes(q)) score += 10;
+          return { a, code, label, score };
+        })
+        .filter((m) => m.code && m.score > 0)
+        .sort((x, y) => y.score - x.score)
+        .slice(0, 10);
+
+      dl.innerHTML = matches
+        .map((m) => `<option value="${m.code}" label="${m.label.replace(/"/g, "&quot;")}"></option>`)
+        .join("");
+    });
+  }
+
+  // ----------------------------
+  // Globe init
+  // ----------------------------
+  function initGlobe() {
+    if (window.AwardGlobe && els.globeEl) {
+      window.AwardGlobe.init(els.globeEl);
+      window.AwardGlobe.clear();
+    }
+  }
+
+  function plotFlights(flights) {
+    if (!window.AwardGlobe) return;
+    window.AwardGlobe.setFlights(flights || []);
+  }
+
+  // ----------------------------
+  // Render flight list
+  // ----------------------------
+  function feet(alt) {
     const n = Number(alt);
+    if (!Number.isFinite(n)) return "—";
     return n >= 1000 ? `${Math.round(n / 1000)}k ft` : `${Math.round(n)} ft`;
   }
-
-  function kmhFromKnots(knots) {
-    if (knots == null || Number.isNaN(Number(knots))) return "—";
-    return `${Math.round(Number(knots) * 1.852)} km/h`;
+  function kmh(knots) {
+    const n = Number(knots);
+    if (!Number.isFinite(n)) return "—";
+    return `${Math.round(n * 1.852)} km/h`;
+  }
+  function heading(h) {
+    const n = Number(h);
+    if (!Number.isFinite(n)) return "—";
+    return `${Math.round(n)}°`;
   }
 
-  // -----------------------
-  // Airport dataset -> datalist
-  // -----------------------
-  function pickAirportDataset() {
-    // Support multiple possible globals
-    // You have AIRPORT_DATA_GUIDE.js in /public — it likely defines one of these.
-    return (
-      window.AIRPORTS ||
-      window.AIRPORT_DATA ||
-      window.AIRPORT_DATA_GUIDE ||
-      window.AIRPORT_GUIDE ||
-      null
-    );
-  }
-
-  function normalizeAirportItem(a) {
-    if (!a) return null;
-    // Allow a bunch of shapes
-    const iata =
-      (a.iata || a.IATA || a.code || a.Code || a.iata_code || a.iataCode || "").toString().trim().toUpperCase();
-
-    if (!/^[A-Z]{3}$/.test(iata)) return null;
-
-    const city = (a.city || a.municipality || a.town || "").toString().trim();
-    const name = (a.name || a.airport || a.airport_name || "").toString().trim();
-    const country = (a.country || a.iso_country || a.countryName || "").toString().trim();
-
-    const primary = city || name || "";
-    const secondary = country ? `, ${country}` : "";
-    const label = primary ? `${primary}${secondary}` : (country || "");
-
-    return { iata, label, name, city, country };
-  }
-
-  function buildAirportDatalist() {
-    if (!els.airportOptions) return;
-
-    const raw = pickAirportDataset();
-    if (!raw) {
-      // Not fatal: user can still enter IATA manually
-      console.warn("No airport dataset found on window.* (AIRPORTS / AIRPORT_DATA_GUIDE etc).");
-      return;
-    }
-
-    const list = Array.isArray(raw) ? raw : (raw.airports || raw.data || []);
-    if (!Array.isArray(list) || !list.length) {
-      console.warn("Airport dataset found but is empty/unknown shape.");
-      return;
-    }
-
-    // Build options
-    els.airportOptions.innerHTML = "";
-    const frag = document.createDocumentFragment();
-
-    // Limit for performance
-    const MAX = 8000;
-    let count = 0;
-
-    for (const item of list) {
-      const a = normalizeAirportItem(item);
-      if (!a) continue;
-
-      const opt = document.createElement("option");
-      // Put IATA in value (best compatibility) and show name in label-like text
-      // Many browsers show only value; so we embed name in value too:
-      opt.value = `${a.iata} - ${a.label || a.name || a.city || ""}`.trim();
-
-      frag.appendChild(opt);
-      count++;
-      if (count >= MAX) break;
-    }
-
-    els.airportOptions.appendChild(frag);
-  }
-
-  // On blur/change: if they selected "BOS - ..." convert input to "BOS"
-  function attachAirportInputBehavior(inputEl) {
-    if (!inputEl) return;
-
-    inputEl.addEventListener("change", () => {
-      const code = extractIata(inputEl.value);
-      if (code) inputEl.value = code;
-    });
-
-    inputEl.addEventListener("blur", () => {
-      const code = extractIata(inputEl.value);
-      if (code) inputEl.value = code;
-    });
-  }
-
-  // -----------------------
-  // Render list
-  // -----------------------
   function renderFlightsList(from, to, flights) {
     els.flightsList.innerHTML = "";
 
@@ -183,42 +168,36 @@
       els.flightsList.innerHTML = `
         <div class="lt-flightCard">
           <div style="color:#8a99b3; font-weight:800;">No live flights found</div>
-          <div style="color:#8a99b3; margin-top:6px; font-size:0.92rem;">
-            No aircraft currently flying <strong>${escapeHtml(from)} → ${escapeHtml(to)}</strong>.
+          <div style="color:#8a99b3; margin-top:6px;">
+            No aircraft currently flying <strong>${from} → ${to}</strong>.
           </div>
-        </div>
-      `;
+        </div>`;
       return;
     }
 
     for (const f of flights) {
       const num = f.number || f.id || "—";
       const airline = f.airline || "N/A";
-      const alt = feetFromAltitude(f.altitude);
-      const spd = kmhFromKnots(f.speed);
-      const hdg = (f.heading != null && !Number.isNaN(Number(f.heading))) ? `${Math.round(f.heading)}°` : "—";
-
       const card = document.createElement("div");
       card.className = "lt-flightCard";
       card.innerHTML = `
         <div class="lt-flightTop">
-          <div class="lt-flightNum">${escapeHtml(num)}</div>
-          <div class="lt-badge">${escapeHtml(airline)}</div>
+          <div class="lt-flightNum">${num}</div>
+          <div class="lt-badge">${airline}</div>
         </div>
-        <div class="lt-flightRoute">${escapeHtml(f.origin || from)} → ${escapeHtml(f.destination || to)}</div>
+        <div class="lt-flightRoute">${f.origin || from} → ${f.destination || to}</div>
         <div class="lt-metrics">
-          <div><span>Altitude</span><strong>${escapeHtml(alt)}</strong></div>
-          <div><span>Speed</span><strong>${escapeHtml(spd)}</strong></div>
-          <div><span>Heading</span><strong>${escapeHtml(hdg)}</strong></div>
-        </div>
-      `;
+          <div><span>Altitude</span><strong>${feet(f.altitude)}</strong></div>
+          <div><span>Speed</span><strong>${kmh(f.speed)}</strong></div>
+          <div><span>Heading</span><strong>${heading(f.heading)}</strong></div>
+        </div>`;
       els.flightsList.appendChild(card);
     }
   }
 
-  // -----------------------
-  // API call
-  // -----------------------
+  // ----------------------------
+  // API
+  // ----------------------------
   async function fetchFlightsByRoute(from, to) {
     const url = `/api/live/route?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
     const res = await fetch(url, { headers: { Accept: "application/json" } });
@@ -227,29 +206,29 @@
     let data;
     try {
       data = JSON.parse(text);
-    } catch (_) {
-      throw new Error(`API returned non-JSON (HTTP ${res.status}). Check /api/live/route deployment.`);
+    } catch {
+      throw new Error("Live API returned non-JSON (check /api/live/route deployment).");
     }
 
-    if (!res.ok || data?.success === false) {
+    if (!res.ok || !data || data.success === false) {
       throw new Error(data?.error || `Live route error (HTTP ${res.status})`);
     }
 
     return Array.isArray(data.flights) ? data.flights : [];
   }
 
-  // -----------------------
-  // Search flow
-  // -----------------------
+  // ----------------------------
+  // Search Flow
+  // ----------------------------
   async function runSearch({ scrollIntoView = true } = {}) {
     clearError();
 
-    const from = extractIata(els.from.value);
-    const to = extractIata(els.to.value);
-    const flightNumber = normFlightNumber(els.flightNumber.value);
+    const from = normIata(els.from.value);
+    const to = normIata(els.to.value);
+    const flightNumber = normIata(els.flightNumber.value).replace(/\s+/g, "");
 
-    if (!from || !to) {
-      showError("Type an airport (city/name) and select it, or enter a valid 3-letter IATA (e.g., JFK, LHR).");
+    if (!isIata(from) || !isIata(to)) {
+      showError("Please enter valid 3-letter IATA codes (e.g., JFK, LHR). Use the dropdown suggestions.");
       return;
     }
     if (from === to) {
@@ -258,7 +237,7 @@
     }
 
     els.pillRoute.textContent = `${from} → ${to}`;
-    els.pillCount.textContent = `Searching…`;
+    els.pillCount.textContent = "Searching…";
     els.pillUpdated.textContent = `Updated ${niceTime()}`;
     els.globeSub.textContent = `Showing live aircraft for ${from} → ${to}. Drag to rotate.`;
     els.globeStatus.textContent = "Loading";
@@ -273,7 +252,12 @@
       let flights = await fetchFlightsByRoute(from, to);
 
       if (flightNumber) {
-        flights = flights.filter((f) => normFlightNumber(f.number || "").includes(flightNumber));
+        flights = flights.filter((f) =>
+          String(f.number || "")
+            .toUpperCase()
+            .replace(/\s+/g, "")
+            .includes(flightNumber)
+        );
       }
 
       els.pillCount.textContent = `${flights.length} flight${flights.length === 1 ? "" : "s"}`;
@@ -281,47 +265,34 @@
       els.globeStatus.textContent = flights.length ? "Live" : "No flights";
 
       renderFlightsList(from, to, flights);
-
-      // ✅ Plot on globe (this was missing before if globe-3d.js didn't init)
-      if (window.AwardGlobe && typeof window.AwardGlobe.setFlights === "function") {
-        window.AwardGlobe.setFlights(flights);
-      } else {
-        console.warn("AwardGlobe not available. Check that globe-3d.js is loaded after globe.gl.");
-      }
+      plotFlights(flights); // <<< THIS is what actually draws dots & labels
     } catch (err) {
       console.error(err);
       els.pillCount.textContent = "Search failed";
       els.globeStatus.textContent = "Error";
       showError(err.message || "Search failed");
-
       els.flightsList.innerHTML = `
         <div class="lt-flightCard">
           <div style="color:#ffd2cf; font-weight:900;">Search failed</div>
-          <div style="color:#8a99b3; margin-top:6px;">${escapeHtml(err.message || "")}</div>
-        </div>
-      `;
-
-      if (window.AwardGlobe && typeof window.AwardGlobe.clear === "function") {
-        window.AwardGlobe.clear();
-      }
+          <div style="color:#8a99b3; margin-top:6px;">${String(err.message || "").replace(/</g, "&lt;")}</div>
+        </div>`;
+      if (window.AwardGlobe) window.AwardGlobe.clear();
     } finally {
       setLoading(false);
     }
   }
 
-  // -----------------------
   // Buttons
-  // -----------------------
   els.btnTrack.addEventListener("click", () => runSearch({ scrollIntoView: true }));
 
   els.btnModify.addEventListener("click", () => {
     els.formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => els.from.focus(), 200);
+    setTimeout(() => els.from.focus(), 250);
   });
 
   els.btnNew.addEventListener("click", () => {
-    els.from.value = "";
-    els.to.value = "";
+    els.from.value = "JFK";
+    els.to.value = "LHR";
     els.flightNumber.value = "";
     clearError();
     els.flightsList.innerHTML = "";
@@ -330,16 +301,12 @@
     els.pillUpdated.textContent = "Not searched";
     els.globeStatus.textContent = "Idle";
     els.globeSub.textContent = "Search a route to plot flights. Drag to rotate.";
-
-    if (window.AwardGlobe && typeof window.AwardGlobe.clear === "function") {
-      window.AwardGlobe.clear();
-    }
-
+    if (window.AwardGlobe) window.AwardGlobe.clear();
     els.formCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => els.from.focus(), 200);
+    setTimeout(() => els.from.focus(), 250);
   });
 
-  // Enter triggers search
+  // Enter key triggers search
   [els.from, els.to, els.flightNumber].forEach((inp) => {
     inp.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -349,22 +316,19 @@
     });
   });
 
-  // -----------------------
-  // Init on load
-  // -----------------------
-  window.addEventListener("DOMContentLoaded", () => {
-    // init globe early (so it renders immediately)
-    try {
-      if (window.AwardGlobe && typeof window.AwardGlobe.init === "function") {
-        window.AwardGlobe.init("globe");
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  // Keep iata inputs clean
+  [els.from, els.to].forEach((inp) => {
+    inp.addEventListener("input", () => {
+      inp.value = normIata(inp.value).replace(/[^A-Z]/g, "").slice(0, 3);
+    });
+  });
 
-    // build airport suggestions
-    buildAirportDatalist();
-    attachAirportInputBehavior(els.from);
-    attachAirportInputBehavior(els.to);
+  // Init
+  window.addEventListener("DOMContentLoaded", () => {
+    initGlobe();
+
+    // Attach autocomplete (requires AIRPORT_DATA_GUIDE.js to be loaded)
+    attachAirportAutocomplete(els.from, "airports_from_list");
+    attachAirportAutocomplete(els.to, "airports_to_list");
   });
 })();

@@ -1,131 +1,125 @@
 /* public/globe-3d.js
-   - Initializes Globe.gl on #globe
-   - Plots flight markers (lat/lng) and optionally centers view
-   - Exposes: window.AwardGlobe.init(), setFlights(), clear()
+   Globe renderer using Globe.gl
+   Exposes: window.AwardGlobe = { init(el), setFlights(flights), clear(), resize() }
 */
-
 (function () {
   let globe = null;
   let containerEl = null;
-  let resizeObserver = null;
 
-  const DEFAULT_VIEW = { lat: 20, lng: 0, altitude: 2.1 };
-
-  function toNum(v) {
+  function safeNum(v) {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
   }
 
-  function ensureGlobeLoaded() {
+  function init(el) {
+    containerEl = el;
+    if (!containerEl) return null;
+
+    if (globe) return globe;
+
     if (!window.Globe) {
-      throw new Error("Globe.gl is not loaded. Check the CDN script tag order.");
-    }
-  }
-
-  function sizeToContainer() {
-    if (!globe || !containerEl) return;
-    const w = Math.max(10, containerEl.clientWidth || 10);
-    const h = Math.max(10, containerEl.clientHeight || 10);
-    try {
-      globe.width(w);
-      globe.height(h);
-    } catch (_) {}
-  }
-
-  function init(containerId = "globe") {
-    ensureGlobeLoaded();
-
-    containerEl = document.getElementById(containerId);
-    if (!containerEl) throw new Error(`Missing #${containerId} element`);
-
-    // If the container has no height, Globe.gl will render a 0px canvas.
-    const h = containerEl.clientHeight;
-    if (!h || h < 50) {
-      console.warn(`#${containerId} has low/zero height (${h}px). Ensure CSS sets a fixed height.`);
+      console.warn("Globe.gl not loaded. Make sure globe.gl is included before globe-3d.js");
+      return null;
     }
 
-    // Create globe once
     globe = Globe()(containerEl)
       .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
       .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
       .backgroundColor("#0a0f1e")
-      .atmosphereColor("#c5ff68")
-      .atmosphereAltitude(0.12)
-      .pointsData([])
-      .pointColor(() => "#c5ff68")
-      .pointRadius(0.35)
-      .pointAltitude(0.02)
-      .pointLabel((d) => {
-        const num = d.number || d.id || "Flight";
-        const alt = d.altitude != null ? `${Math.round(d.altitude)} ft` : "—";
-        const spd = d.speed != null ? `${Math.round(d.speed)} kt` : "—";
-        return `${num}<br/>Alt: ${alt}<br/>Speed: ${spd}`;
-      });
 
-    // Controls feel nicer
-    try {
-      const c = globe.controls();
-      c.enableDamping = true;
-      c.dampingFactor = 0.08;
-      c.rotateSpeed = 0.35;
-      c.zoomSpeed = 0.7;
-    } catch (_) {}
+      // Points (aircraft markers)
+      .pointsData([])
+      .pointLat("lat")
+      .pointLng("lng")
+      .pointAltitude("alt")
+      .pointRadius("r")
+      .pointColor("color")
+
+      // Labels (flight numbers)
+      .labelsData([])
+      .labelLat("lat")
+      .labelLng("lng")
+      .labelText("text")
+      .labelColor(() => "#c5ff68")
+      .labelSize(() => 1.1)
+      .labelDotRadius(() => 0.2)
+      .labelAltitude(() => 0.02);
+
+    // Controls
+    const controls = globe.controls();
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.35;
+    controls.zoomSpeed = 0.6;
 
     // Initial view
-    globe.pointOfView(DEFAULT_VIEW, 0);
+    globe.pointOfView({ lat: 20, lng: 0, altitude: 2.0 }, 0);
 
-    // Size handling (better than just window resize)
-    sizeToContainer();
-
-    if (resizeObserver) resizeObserver.disconnect();
-    resizeObserver = new ResizeObserver(() => sizeToContainer());
-    resizeObserver.observe(containerEl);
-
-    window.addEventListener("resize", sizeToContainer);
+    // Set initial size
+    resize();
 
     return globe;
+  }
+
+  function resize() {
+    if (!globe || !containerEl) return;
+    const w = containerEl.clientWidth || 800;
+    const h = containerEl.clientHeight || 440;
+    globe.width(w);
+    globe.height(h);
   }
 
   function clear() {
     if (!globe) return;
     globe.pointsData([]);
-    globe.pointOfView(DEFAULT_VIEW, 600);
+    globe.labelsData([]);
   }
 
-  function setFlights(flights = []) {
-    if (!globe) init("globe");
+  function setFlights(flights) {
+    if (!globe) return;
 
-    const pts = (flights || [])
-      .map((f) => {
-        const lat = toNum(f.latitude);
-        const lng = toNum(f.longitude);
-        if (lat == null || lng == null) return null;
-        return {
-          lat,
-          lng,
-          id: f.id,
-          number: f.number,
-          altitude: toNum(f.altitude),
-          speed: toNum(f.speed),
-          heading: toNum(f.heading),
-        };
-      })
-      .filter(Boolean);
+    const pts = [];
+    const labels = [];
+
+    for (const f of flights || []) {
+      const lat = safeNum(f.latitude);
+      const lng = safeNum(f.longitude);
+      if (lat == null || lng == null) continue;
+
+      // Make them very visible:
+      pts.push({
+        lat,
+        lng,
+        // Small altitude so it sits just above globe surface:
+        alt: 0.03,
+        r: 0.55,          // BIGGER radius so you can see it
+        color: "#c5ff68",
+        id: f.id || "",
+        text: (f.number || f.id || "").toString()
+      });
+
+      // Label near the dot (optional, but helpful)
+      labels.push({
+        lat,
+        lng,
+        text: (f.number || "").toString() || "✈︎"
+      });
+    }
 
     globe.pointsData(pts);
+    globe.labelsData(labels);
 
-    // Center globe roughly over average point
+    // Auto-center if we have points
     if (pts.length) {
       const avgLat = pts.reduce((a, p) => a + p.lat, 0) / pts.length;
       const avgLng = pts.reduce((a, p) => a + p.lng, 0) / pts.length;
-      globe.pointOfView({ lat: avgLat, lng: avgLng, altitude: 1.7 }, 800);
-    } else {
-      globe.pointOfView(DEFAULT_VIEW, 600);
+      globe.pointOfView({ lat: avgLat, lng: avgLng, altitude: 1.55 }, 900);
     }
-
-    // Force size refresh (in case init happened before layout)
-    sizeToContainer();
   }
 
-  window.AwardGlobe = { init, setFlights, clear };
+  // Expose API
+  window.AwardGlobe = { init, setFlights, clear, resize };
+
+  // auto-resize on window resize
+  window.addEventListener("resize", () => window.AwardGlobe.resize());
 })();
