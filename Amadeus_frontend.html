@@ -1,0 +1,111 @@
+// ============================================
+// AMADEUS INTEGRATION - FRONTEND
+// Add this to search.html before </body>
+// ============================================
+
+<script>
+// Load real flights from Amadeus API
+async function loadAmadeusFlights() {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from') || 'JFK';
+    const to = params.get('to') || 'BLR';
+    const date = params.get('departure') || '2026-02-20';
+    
+    // Show loading
+    const container = document.getElementById('flights-container');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 4rem; background: #1e2836; border-radius: 20px; border: 1px solid #2a3644;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+            <h3 style="margin-bottom: 0.5rem;">Searching Real Flights...</h3>
+            <p style="color: #8a99b3;">Finding the best deals from ${from} to ${to}</p>
+        </div>
+    `;
+    
+    try {
+        console.log(`📡 Calling Amadeus API: ${from} → ${to} on ${date}`);
+        
+        const response = await fetch(`/api/amadeus/search?from=${from}&to=${to}&date=${date}&adults=1`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'API request failed');
+        }
+        
+        if (data.success && data.flights.length > 0) {
+            console.log(`✅ Loaded ${data.count} real flights from Amadeus!`);
+            
+            // Replace static data with real flights
+            window.flightDatabase = data.flights;
+            
+            // Update filters to match real data
+            updateFiltersForRealData(data.flights);
+            
+            // Render
+            renderFlights();
+            
+            // Show success toast
+            showToast(`Found ${data.count} real flights!`, 'success');
+        } else {
+            console.log('⚠️ No flights found, using demo data');
+            renderFlights(); // Fall back to static data
+            showToast('No flights available for this route. Showing similar options.', 'info');
+        }
+        
+    } catch (error) {
+        console.error('❌ Amadeus error:', error);
+        
+        // Fall back to static data
+        renderFlights();
+        
+        container.insertAdjacentHTML('afterbegin', `
+            <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                <strong>⚠️ Real-time search unavailable</strong>
+                <p style="font-size: 0.9rem; color: #8a99b3; margin-top: 0.5rem;">Showing example flights. ${error.message}</p>
+            </div>
+        `);
+    }
+}
+
+function updateFiltersForRealData(flights) {
+    // Update airline filters
+    const airlines = [...new Set(flights.map(f => f.airline))];
+    currentFilters.airlines = {};
+    airlines.forEach(airline => {
+        currentFilters.airlines[airline] = true;
+    });
+    
+    // Rebuild filter UI (simplified - you can enhance this)
+    console.log('Airlines in results:', airlines);
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: ${type === 'success' ? '#c5ff68' : type === 'error' ? '#e74c3c' : '#4a9cff'};
+        color: #0a0f1e;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Initialize - call Amadeus on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => loadAmadeusFlights(), 1000);
+});
+
+console.log('✅ Amadeus integration loaded');
+</script>

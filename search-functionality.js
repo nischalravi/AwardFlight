@@ -1,10 +1,9 @@
 // ============================================
-// SEARCH PAGE FUNCTIONALITY - FIXED
+// SEARCH FUNCTIONALITY WITH PRICE/POINTS TOGGLE
 // ============================================
 
 let currentFilters = {
     priceMax: 2000,
-    // START WITH ALL CHECKED - Show all flights initially
     stops: { 0: true, 1: true, 2: true },
     airlines: {
         'Air France': true,
@@ -19,11 +18,7 @@ let currentFilters = {
     }
 };
 
-let currentView = 'price';
-
-// ============================================
-// RENDER FLIGHT CARDS
-// ============================================
+let currentView = 'price'; // 'price' or 'points'
 
 function renderFlights() {
     if (!window.flightDatabase) {
@@ -49,7 +44,7 @@ function renderFlights() {
     if (container) {
         container.innerHTML = filteredFlights.map(flight => createFlightCard(flight)).join('');
         
-        // Add event listeners to award toggles
+        // Add event listeners
         document.querySelectorAll('.award-toggle').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -59,7 +54,6 @@ function renderFlights() {
             });
         });
 
-        // Add click handler to select buttons
         document.querySelectorAll('.btn-select').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -75,6 +69,15 @@ function createFlightCard(flight) {
     const cabinClass = 'business';
     const milesNeeded = flight.awardMiles.businessClass;
     
+    // Display based on current view
+    const displayPrice = currentView === 'points' 
+        ? `${milesNeeded.toLocaleString()} pts`
+        : `$${flight.price.toLocaleString()}`;
+    
+    const priceBadgeColor = currentView === 'points'
+        ? 'background: linear-gradient(135deg, #4a9cff, #357abd); color: #ffffff;'
+        : 'background: #c5ff68; color: #0a0f1e;';
+    
     return `
         <div class="flight-card">
             <div class="flight-header">
@@ -86,14 +89,13 @@ function createFlightCard(flight) {
                     </div>
                 </div>
                 <div class="price-info">
-                    <div class="price-badge">$${flight.price.toLocaleString()}</div>
+                    <div class="price-badge" style="${priceBadgeColor}">${displayPrice}</div>
                     <div class="points-info">
-                        or <span class="points-value">${milesNeeded.toLocaleString()} miles</span>
+                        ${currentView === 'price' ? `or <span class="points-value">${milesNeeded.toLocaleString()} miles</span>` : `or <span class="points-value">$${flight.price.toLocaleString()}</span>`}
                     </div>
                 </div>
             </div>
 
-            <!-- Award Information -->
             <div class="award-info">
                 <div class="award-header">
                     <div class="award-title">💎 Award Availability via ${flight.awardMiles.program}</div>
@@ -150,27 +152,14 @@ function createFlightCard(flight) {
             </div>
 
             <div class="flight-details">
-                <div class="detail-item">
-                    <span>⚡</span>
-                    <span>${flight.legroom}</span>
-                </div>
-                <div class="detail-item">
-                    <span>📺</span>
-                    <span>${flight.entertainment ? 'In-flight entertainment' : 'No entertainment'}</span>
-                </div>
-                <div class="detail-item">
-                    <span>🍽️</span>
-                    <span>${flight.meal}</span>
-                </div>
+                <div class="detail-item"><span>⚡</span><span>${flight.legroom}</span></div>
+                <div class="detail-item"><span>📺</span><span>${flight.entertainment ? 'Entertainment' : 'No entertainment'}</span></div>
+                <div class="detail-item"><span>🍽️</span><span>${flight.meal}</span></div>
                 <button class="btn-select">Select Flight</button>
             </div>
         </div>
     `;
 }
-
-// ============================================
-// UPDATE FILTER COUNTS
-// ============================================
 
 function updateFilterCounts() {
     const counts = {
@@ -203,75 +192,12 @@ function updateFilterCounts() {
     });
 }
 
-// ============================================
-// EVENT LISTENERS
-// ============================================
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Create scroll progress (plane and clouds)
-    const progressContainer = document.createElement('div');
-    progressContainer.className = 'scroll-progress';
-    
-    const progressBar = document.createElement('div');
-    progressBar.className = 'scroll-progress-bar';
-    
-    const plane = document.createElement('div');
-    plane.className = 'scroll-plane';
-    plane.innerHTML = `
-        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 28 16 L 18 12 L 18 8 C 18 6.5 17 5 16 5 C 15 5 14 6.5 14 8 L 14 12 L 4 16 L 4 18 L 14 16 L 14 24 L 11 26 L 11 28 L 16 27 L 21 28 L 21 26 L 18 24 L 18 16 L 28 18 Z" 
-                  fill="#c5ff68" 
-                  stroke="#a8e050" 
-                  stroke-width="0.5"/>
-        </svg>
-    `;
-    
-    const createCloud = () => {
-        const cloud = document.createElement('div');
-        cloud.className = 'scroll-cloud';
-        cloud.innerHTML = `
-            <svg viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="15" cy="25" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
-                <ellipse cx="25" cy="20" rx="12" ry="10" fill="#4a9cff" opacity="0.2"/>
-                <ellipse cx="35" cy="22" rx="10" ry="8" fill="#4a9cff" opacity="0.15"/>
-                <ellipse cx="45" cy="26" rx="8" ry="7" fill="#4a9cff" opacity="0.12"/>
-                <rect x="12" y="24" width="38" height="8" rx="4" fill="#4a9cff" opacity="0.18"/>
-            </svg>
-        `;
-        return cloud;
-    };
-    
-    progressContainer.appendChild(createCloud());
-    progressContainer.appendChild(createCloud());
-    progressContainer.appendChild(createCloud());
-    progressContainer.appendChild(progressBar);
-    progressContainer.appendChild(plane);
-    document.body.appendChild(progressContainer);
-    
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-        const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (window.scrollY / windowHeight) * 100;
-        
-        progressBar.style.width = scrolled + '%';
-        plane.style.left = scrolled + '%';
-        progressContainer.classList.add('visible');
-        
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            progressContainer.classList.remove('visible');
-        }, 1500);
-    });
-
     // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
     const from = params.get('from') || 'JFK';
     const to = params.get('to') || 'MXP';
-    const departure = params.get('departure');
-    const returnDate = params.get('return');
-    const passengers = params.get('passengers') || '2';
-    const cabinClass = params.get('class') || 'business';
-
+    
     // Update header
     if (document.getElementById('header-from')) {
         document.getElementById('header-from').textContent = from;
@@ -279,36 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('header-to')) {
         document.getElementById('header-to').textContent = to;
     }
-    if (departure && returnDate) {
-        const deptDate = new Date(departure).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const retDate = new Date(returnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        if (document.getElementById('header-dates')) {
-            document.getElementById('header-dates').textContent = `${deptDate} - ${retDate}`;
-        }
-    }
-    if (document.getElementById('header-class')) {
-        document.getElementById('header-class').textContent = `${cabinClass.charAt(0).toUpperCase() + cabinClass.slice(1)} • ${passengers} Passenger${passengers > 1 ? 's' : ''}`;
-    }
 
-    // Initial render - wait for flight database to load
-    if (window.flightDatabase) {
-        renderFlights();
-    } else {
-        // If flightDatabase not loaded yet, wait a bit
-        setTimeout(() => {
-            if (window.flightDatabase) {
-                renderFlights();
-            } else {
-                console.error('Flight database not loaded!');
-                document.getElementById('flights-container').innerHTML = `
-                    <div style="text-align: center; padding: 4rem; color: #8a99b3;">
-                        <h3>Loading flights...</h3>
-                        <p>Please make sure search-flights-data.js is loaded</p>
-                    </div>
-                `;
-            }
-        }, 500);
-    }
+    // Initial render
+    setTimeout(() => {
+        if (window.flightDatabase) {
+            renderFlights();
+            console.log('✅ Rendered', window.flightDatabase.length, 'flights');
+        }
+    }, 500);
 
     // Filter checkboxes
     document.querySelectorAll('.filter-option').forEach(option => {
@@ -355,44 +259,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.flightDatabase.sort((a, b) => a.price - b.price);
             } else if (sortBy === 'Fewest Miles') {
                 window.flightDatabase.sort((a, b) => a.awardMiles.businessClass - b.awardMiles.businessClass);
-            } else if (sortBy === 'Shortest Duration') {
-                window.flightDatabase.sort((a, b) => {
-                    const getDuration = (d) => {
-                        const parts = d.match(/(\d+)h\s*(\d+)m/);
-                        return parseInt(parts[1]) * 60 + parseInt(parts[2]);
-                    };
-                    return getDuration(a.duration) - getDuration(b.duration);
-                });
-            } else if (sortBy === 'Earliest Departure') {
-                window.flightDatabase.sort((a, b) => {
-                    const getMinutes = (t) => {
-                        const [time, period] = t.split(' ');
-                        let [hours, minutes] = time.split(':').map(Number);
-                        if (period === 'PM' && hours !== 12) hours += 12;
-                        if (period === 'AM' && hours === 12) hours = 0;
-                        return hours * 60 + minutes;
-                    };
-                    return getMinutes(a.departTime) - getMinutes(b.departTime);
-                });
             }
             
             renderFlights();
         });
     }
 
-    // View toggle (Price vs Points)
+    // Price/Points Toggle - THE FIX!
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             
-            if (this.textContent.includes('Points')) {
-                currentView = 'points';
-            } else {
-                currentView = 'price';
-            }
+            currentView = this.textContent.includes('Points') ? 'points' : 'price';
+            console.log('Switched to:', currentView);
+            renderFlights(); // Re-render with new view
         });
     });
 });
 
-console.log('✅ Search page initialized with award miles data');
+// Export
+window.renderFlights = renderFlights;
+console.log('✅ Search functionality ready');
