@@ -449,3 +449,17 @@ window.renderFlights = renderFlights;
 console.log('✅ Render function ready');
 
 window.renderFlights = renderFlights;
+
+// Export and auto-render
+if (typeof window !== 'undefined') {
+    window.renderFlights = renderFlights;
+    window.applyFilters = applyFilters;
+    console.log('✅ Render ready');
+    
+    // Auto-render flights
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(() => renderFlights(), 500));
+    } else {
+        setTimeout(() => renderFlights(), 500);
+    }
+}

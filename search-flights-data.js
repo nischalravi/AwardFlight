@@ -238,3 +238,9 @@ console.log('✅ Flights loaded:', flightDatabase.length);
 
 
 window.flightDatabase = flightDatabase;
+
+// Export to window
+if (typeof window !== 'undefined') {
+    window.flightDatabase = flightDatabase;
+    console.log('✅ Flights loaded:', flightDatabase.length);
+}
