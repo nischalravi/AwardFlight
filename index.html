@@ -64,13 +64,13 @@
                     
                     <!-- Tabs -->
                     <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #2a3644; padding-bottom: 1rem;">
-                        <button class="tab-btn" data-tab="roundtrip" style="background: none; border: none; color: #c5ff68; font-weight: 700; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid #c5ff68; font-family: inherit;">
+                        <button class="tab-btn" data-tab="roundtrip" onclick="switchTab('roundtrip')" style="background: none; border: none; color: #c5ff68; font-weight: 700; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid #c5ff68; font-family: inherit;">
                             Round Trip
                         </button>
-                        <button class="tab-btn" data-tab="oneway" style="background: none; border: none; color: #8a99b3; font-weight: 600; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit;">
+                        <button class="tab-btn" data-tab="oneway" onclick="switchTab('oneway')" style="background: none; border: none; color: #8a99b3; font-weight: 600; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit;">
                             One Way
                         </button>
-                        <button class="tab-btn" data-tab="multicity" style="background: none; border: none; color: #8a99b3; font-weight: 600; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit;">
+                        <button class="tab-btn" data-tab="multicity" onclick="switchTab('multicity')" style="background: none; border: none; color: #8a99b3; font-weight: 600; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit;">
                             Multi-City
                         </button>
                     </div>
