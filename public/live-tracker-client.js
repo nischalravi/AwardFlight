@@ -1,86 +1,157 @@
 // public/live-tracker-client.js
+// Robust client for /api/live/route
+// - Never crashes on HTML/non-JSON responses (common on Vercel 404/500 pages)
+// - Normalizes IATA inputs
+// - Provides clear errors + safe fallbacks
 
-function isIata(code) {
-  return typeof code === "string" && /^[A-Za-z]{3}$/.test(code.trim());
-}
+(function () {
+  "use strict";
 
-function normIata(code) {
-  return String(code || "").trim().toUpperCase();
-}
+  function normIata(v) {
+    return String(v || "").trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+  }
 
-/**
- * Fetch JSON safely (won't crash if server returns HTML like a Vercel 404 page).
- */
-async function fetchJsonSafe(url, { timeoutMs = 15000 } = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  function isIata(v) {
+    return /^[A-Z]{3}$/.test(v);
+  }
 
-  try {
-    const res = await fetch(url, {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      signal: controller.signal,
-    });
-
-    const text = await res.text();
-
-    let data;
+  async function safeReadText(res) {
     try {
-      data = JSON.parse(text);
+      return await res.text();
+    } catch {
+      return "";
+    }
+  }
+
+  async function safeReadJson(res) {
+    // Only attempt JSON if content-type says json (or looks like json)
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const text = await safeReadText(res);
+
+    if (ct.includes("application/json")) {
+      try {
+        return { ok: true, data: JSON.parse(text), raw: text };
+      } catch {
+        return { ok: false, data: null, raw: text };
+      }
+    }
+
+    // Sometimes Vercel returns json with wrong header; detect
+    const looksJson = text.trim().startsWith("{") || text.trim().startsWith("[");
+    if (looksJson) {
+      try {
+        return { ok: true, data: JSON.parse(text), raw: text };
+      } catch {
+        return { ok: false, data: null, raw: text };
+      }
+    }
+
+    return { ok: false, data: null, raw: text };
+  }
+
+  async function trackFlightsByRoute(from, to, opts = {}) {
+    const origin = normIata(from);
+    const dest = normIata(to);
+
+    if (!isIata(origin) || !isIata(dest)) {
+      return {
+        success: false,
+        flights: [],
+        count: 0,
+        error: "Please enter valid 3-letter IATA codes (e.g., JFK, LHR).",
+        meta: { origin, dest },
+      };
+    }
+
+    if (origin === dest) {
+      return {
+        success: false,
+        flights: [],
+        count: 0,
+        error: "Origin and destination cannot be the same.",
+        meta: { origin, dest },
+      };
+    }
+
+    const endpoint = opts.endpoint || "/api/live/route";
+    const url =
+      `${endpoint}?from=${encodeURIComponent(origin)}&to=${encodeURIComponent(dest)}` +
+      (opts.noCache ? `&t=${Date.now()}` : "");
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
     } catch (e) {
-      // This happens when the endpoint returns HTML (e.g., 404 page on Vercel)
-      throw new Error(
-        `Non-JSON response (${res.status}). Likely missing API route. First chars: ${text.slice(
-          0,
-          80
-        )}`
-      );
+      return {
+        success: false,
+        flights: [],
+        count: 0,
+        error: "Network error. Please check your connection and try again.",
+        meta: { origin, dest, detail: String(e?.message || e) },
+      };
     }
 
-    if (!res.ok) {
-      throw new Error(data?.error || `Request failed (${res.status})`);
+    const parsed = await safeReadJson(res);
+
+    // If backend returned valid JSON, use it
+    if (parsed.ok && parsed.data) {
+      const data = parsed.data;
+
+      if (!res.ok) {
+        return {
+          success: false,
+          flights: [],
+          count: 0,
+          error: data?.error || data?.message || `Live route API error (${res.status})`,
+          meta: { origin, dest, status: res.status },
+        };
+      }
+
+      const flights = Array.isArray(data?.flights) ? data.flights : [];
+      return {
+        success: true,
+        flights,
+        count: typeof data?.count === "number" ? data.count : flights.length,
+        meta: { origin, dest, status: res.status },
+      };
     }
 
-    return data;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/**
- * Track live flights by route.
- * Returns:
- *   { success: boolean, flights: array, error?: string }
- */
-async function trackFlightsByRoute(from, to) {
-  const fromIata = normIata(from);
-  const toIata = normIata(to);
-
-  // Validate client-side so we don't spam the API
-  if (!isIata(fromIata) || !isIata(toIata)) {
-    return { success: false, flights: [], error: "Please enter valid 3-letter IATA codes (e.g., JFK, LHR)." };
-  }
-  if (fromIata === toIata) {
-    return { success: false, flights: [], error: "Origin and destination cannot be the same." };
-  }
-
-  const url = `/api/live/route?from=${encodeURIComponent(fromIata)}&to=${encodeURIComponent(toIata)}`;
-
-  try {
-    const data = await fetchJsonSafe(url);
-
-    // Ensure predictable output
-    const flights = Array.isArray(data?.flights) ? data.flights : [];
-    return { success: true, flights };
-  } catch (err) {
-    console.error("Live tracker error:", err?.message || err);
+    // Non-JSON response (usually Vercel error HTML). Provide a readable error.
+    const snippet = (parsed.raw || "").replace(/\s+/g, " ").trim().slice(0, 160);
     return {
       success: false,
       flights: [],
-      error: err?.message || "Live route lookup failed",
+      count: 0,
+      error:
+        `Live route API returned non-JSON (${res.status}). ` +
+        (snippet ? `Response: ${snippet}` : "Check Vercel function logs."),
+      meta: { origin, dest, status: res.status },
     };
   }
-}
 
-// Expose globally if your HTML calls it directly
-window.trackFlightsByRoute = trackFlightsByRoute;
+  // Optional helper: turn raw flight into UI-friendly values
+  function formatFlight(f) {
+    const altitudeFt = Number(f?.altitude);
+    const speedKt = Number(f?.speed);
+    const heading = Number(f?.heading);
+
+    return {
+      ...f,
+      altitudeFt: Number.isFinite(altitudeFt) ? altitudeFt : null,
+      altitudeKft: Number.isFinite(altitudeFt) ? Math.round(altitudeFt / 1000) : null,
+      speedKt: Number.isFinite(speedKt) ? speedKt : null,
+      heading: Number.isFinite(heading) ? heading : null,
+      lat: Number(f?.latitude),
+      lng: Number(f?.longitude),
+    };
+  }
+
+  // Expose to window (so live-tracker.html can call it)
+  window.trackFlightsByRoute = trackFlightsByRoute;
+  window.formatTrackedFlight = formatFlight;
+})();
