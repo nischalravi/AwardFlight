@@ -236,3 +236,5 @@ console.log('✅ Loaded', flightDatabase.length, 'flights');
 window.flightDatabase = flightDatabase;
 console.log('✅ Flights loaded:', flightDatabase.length);
 
+
+window.flightDatabase = flightDatabase;

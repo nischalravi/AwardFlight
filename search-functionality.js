@@ -447,3 +447,5 @@ window.applyFilters = applyFilters;
 console.log('✅ Search ready');
 window.renderFlights = renderFlights;
 console.log('✅ Render function ready');
+
+window.renderFlights = renderFlights;
