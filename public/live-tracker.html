@@ -1,4 +1,3 @@
-<!-- public/live-tracker.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,270 +5,228 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Flight Tracker - Award Flights</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./enhancements.css" />
+
+  <!-- Globe dependencies (reliable CDN) -->
+  <script defer src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script defer src="https://unpkg.com/globe.gl@2.34.0/dist/globe.gl.min.js"></script>
+
+  <!-- Your existing airport loader (if it populates airport data) -->
+  <script defer src="./airport-loader.js"></script>
 
   <style>
-    /* Page layout + mobile polish (no need to touch your global CSS) */
-    .page {
-      padding: 120px 1rem 2rem;
+    /* Page layout fixes */
+    .lt-page {
+      padding: 110px 16px 32px;
       min-height: 100vh;
-      background: radial-gradient(1200px 600px at 50% 0%, rgba(74,156,255,0.18), transparent 60%),
-                  radial-gradient(900px 600px at 20% 30%, rgba(197,255,104,0.12), transparent 60%),
-                  linear-gradient(135deg, #0a0f1e 0%, #101a2b 100%);
     }
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    .hero { text-align: center; margin-bottom: 1.5rem; }
-    .hero h1 { font-size: clamp(2rem, 3.5vw, 3rem); margin: 0 0 0.6rem; }
-    .hero p { margin: 0 auto; max-width: 720px; color: #8a99b3; font-size: 1.05rem; line-height: 1.6; }
-
-    .card {
-      background: rgba(30, 40, 54, 0.9);
-      border: 1px solid #2a3644;
-      border-radius: 22px;
-      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
-      overflow: hidden;
+    @media (max-width: 768px) {
+      .lt-page { padding-top: 92px; }
+      .nav { overflow-x: auto; }
     }
 
-    .grid {
+    .lt-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Hero: keep it compact so tracker is visible without scrolling */
+    .lt-hero {
       display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-    }
-
-    .panel {
-      background: rgba(10, 15, 30, 0.55);
-      border: 1px solid #2a3644;
-      border-radius: 18px;
-      padding: 1.25rem;
-    }
-
-    .badgeLive {
-      display: inline-flex;
+      grid-template-columns: 1fr;
+      gap: 10px;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 0.9rem;
-      border-radius: 12px;
-      background: rgba(197,255,104,0.14);
-      border: 1px solid rgba(197,255,104,0.35);
-      color: #c5ff68;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      margin-bottom: 1rem;
+      margin-bottom: 18px;
+      padding: 18px 0 6px;
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: #e74c3c;
-      border-radius: 50%;
-      box-shadow: 0 0 14px rgba(231,76,60,0.75);
+    .lt-hero h1 {
+      font-size: clamp(1.6rem, 2.2vw, 2.6rem);
+      line-height: 1.15;
+      margin: 0;
+    }
+    .lt-hero p {
+      margin: 0;
+      color: #8a99b3;
+      max-width: 780px;
+      font-size: 1rem;
+      line-height: 1.6;
     }
 
-    .field {
-      margin-bottom: 0.9rem;
+    /* Sticky route bar after search (nice UX) */
+    .lt-routebar {
+      position: sticky;
+      top: 82px;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(30, 40, 54, 0.92);
+      border: 1px solid #2a3644;
+      border-radius: 16px;
+      padding: 12px 12px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 14px;
     }
-    .field label {
-      display: block;
-      margin-bottom: 0.45rem;
-      color: #8a99b3;
-      font-weight: 650;
-      font-size: 0.95rem;
+    @media (max-width: 768px) {
+      .lt-routebar { top: 68px; }
     }
-    .input {
-      width: 100%;
-      padding: 0.95rem 1rem;
+    .lt-pillwrap { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .lt-pill {
       background: #0a0f1e;
       border: 1px solid #2a3644;
-      border-radius: 12px;
+      border-radius: 999px;
+      padding: 10px 12px;
       color: #fff;
-      font-size: 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .lt-pill.muted { color:#8a99b3; font-weight:600; }
+    .lt-actions { display:flex; gap:10px; align-items:center; }
+    .lt-btn {
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
       font-family: inherit;
-      outline: none;
-    }
-    .input:focus {
-      border-color: rgba(197,255,104,0.7);
-      box-shadow: 0 0 0 3px rgba(197,255,104,0.12);
-    }
-
-    .row2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-    }
-    @media (max-width: 520px) {
-      .row2 { grid-template-columns: 1fr; }
-    }
-
-    .btn {
-      width: 100%;
-      padding: 1.05rem 1rem;
-      border: none;
-      border-radius: 14px;
-      font-weight: 850;
-      font-size: 1.05rem;
       cursor: pointer;
-      font-family: inherit;
-      transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+      border: 1px solid #2a3644;
+      background: #0a0f1e;
+      color: #fff;
+    }
+    .lt-btn.primary {
       background: linear-gradient(135deg, #c5ff68, #a8e050);
       color: #0a0f1e;
+      border: none;
     }
-    .btn:active { transform: translateY(1px); }
-    .btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+    .lt-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .helper {
-      margin-top: 0.8rem;
-      color: #8a99b3;
-      font-size: 0.92rem;
-      line-height: 1.5;
+    /* Main grid */
+    .lt-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .lt-grid { grid-template-columns: 1fr; }
     }
 
-    .summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1rem 0;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    .chip {
-      background: #0a0f1e;
+    .lt-card {
+      background: #1e2836;
       border: 1px solid #2a3644;
-      color: #ffffff;
-      padding: 0.55rem 0.75rem;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 0.92rem;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
     }
-    .chip.muted { color: #8a99b3; font-weight: 650; }
-    .actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+
+    /* Form */
+    .lt-livebadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(197, 255, 104, 0.12);
+      border: 1px solid rgba(197, 255, 104, 0.35);
+      color: #c5ff68;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
     }
-    .btnGhost {
-      padding: 0.6rem 0.9rem;
+    .lt-dot { width:8px; height:8px; border-radius:999px; background:#e74c3c; }
+    .lt-field { margin: 10px 0 12px; }
+    .lt-label { display:block; margin-bottom: 6px; color:#8a99b3; font-weight: 700; font-size: 0.9rem; }
+    .lt-input {
+      width: 100%;
+      padding: 12px 12px;
       border-radius: 12px;
       border: 1px solid #2a3644;
-      background: rgba(10,15,30,0.6);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 750;
-      font-family: inherit;
-    }
-
-    /* Smooth collapse/expand */
-    .collapse {
-      max-height: 900px;
-      transition: max-height 520ms ease, opacity 420ms ease, transform 420ms ease;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .collapse.collapsed {
-      max-height: 0;
-      opacity: 0;
-      transform: translateY(-8px);
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    /* Globe block */
-    .globePanelHeader {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-    .globeTitle {
-      margin: 0;
-      font-size: 1.05rem;
-      font-weight: 850;
-      color: #ffffff;
-    }
-    .globeSub {
-      margin: 0.15rem 0 0;
-      font-size: 0.92rem;
-      color: #8a99b3;
-    }
-    #globe3d {
-      width: 100%;
-      aspect-ratio: 16 / 10;
-      border-radius: 18px;
-      border: 1px solid #2a3644;
-      overflow: hidden;
       background: #0a0f1e;
-    }
-
-    /* Flight list */
-    .flightList {
-      margin-top: 1rem;
-      display: grid;
-      gap: 0.75rem;
-    }
-    .flightCard {
-      background: rgba(10,15,30,0.8);
-      border: 1px solid #2a3644;
-      border-radius: 14px;
-      padding: 0.9rem;
-    }
-    .flightTop {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-    .flightNo { font-weight: 900; font-size: 1.05rem; }
-    .pill {
-      background: rgba(42,54,68,0.9);
-      border: 1px solid #2a3644;
-      padding: 0.2rem 0.55rem;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      color: #8a99b3;
-      white-space: nowrap;
-    }
-    .routeLine { color: #8a99b3; font-weight: 650; margin-bottom: 0.5rem; }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.75rem;
-      font-size: 0.92rem;
-    }
-    @media (max-width: 520px) {
-      .metrics { grid-template-columns: 1fr; }
-    }
-    .metric span { color: #8a99b3; display: block; font-size: 0.85rem; margin-bottom: 0.2rem; }
-    .metric strong { color: #c5ff68; font-weight: 900; }
-
-    .alert {
-      margin-top: 1rem;
-      padding: 1rem;
-      border-radius: 14px;
-      border: 1px solid rgba(231,76,60,0.55);
-      background: rgba(42, 30, 30, 0.85);
       color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
     }
-    .alert h3 { margin: 0 0 0.4rem; color: #ff8a8a; }
-    .alert p { margin: 0.25rem 0; color: #8a99b3; }
+    .lt-input:focus { border-color: rgba(197,255,104,0.7); box-shadow: 0 0 0 3px rgba(197,255,104,0.12); }
+    .lt-help { color:#8a99b3; font-size: 0.85rem; line-height: 1.4; }
 
-    /* Focus scrolling */
-    #resultsAnchor { scroll-margin-top: 96px; }
+    /* Globe area */
+    .lt-globeWrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .lt-globeHeader {
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .lt-globeHeader h3 { margin:0; font-size: 1.05rem; }
+    .lt-globeHeader .sub { color:#8a99b3; font-size: 0.85rem; }
+
+    /* IMPORTANT: fixed height so globe renders */
+    #globe {
+      width: 100%;
+      height: 440px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #2a3644;
+      background: radial-gradient(circle at 30% 20%, rgba(74,156,255,0.18), rgba(10,15,30,0.6));
+    }
+    @media (max-width: 960px) {
+      #globe { height: 360px; }
+    }
+
+    /* Flights list */
+    .lt-flights {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .lt-flightCard {
+      background: #0a0f1e;
+      border: 1px solid #2a3644;
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .lt-flightTop {
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .lt-flightNum { font-weight: 900; }
+    .lt-badge {
+      background:#2a3644;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color:#cbd6ea;
+      font-weight: 700;
+    }
+    .lt-flightRoute { color:#8a99b3; margin-bottom: 8px; }
+    .lt-metrics {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+    .lt-metrics span { color:#8a99b3; display:block; font-size: 0.82rem; margin-bottom: 3px; }
+    .lt-metrics strong { color:#c5ff68; }
+    .lt-error {
+      background: rgba(231,76,60,0.12);
+      border: 1px solid rgba(231,76,60,0.45);
+      color: #ffd2cf;
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -294,359 +251,79 @@
     </div>
   </header>
 
-  <main class="page">
-    <div class="wrap">
-      <div class="hero">
+  <main class="lt-page">
+    <div class="lt-container">
+      <section class="lt-hero">
         <h1>🛰️ Live Flight Tracker</h1>
-        <p>Track live aircraft positions on a real 3D globe. Enter a route and see flights in the air, with speed, altitude, and direction.</p>
+        <p>Track live aircraft positions on a real 3D globe. Enter a route (and optionally a flight number) to see flights in the air with speed, altitude, and heading.</p>
+      </section>
+
+      <div class="lt-routebar" id="routebar" aria-live="polite">
+        <div class="lt-pillwrap">
+          <div class="lt-pill" id="pillRoute">—</div>
+          <div class="lt-pill muted" id="pillCount">0 flights</div>
+          <div class="lt-pill muted" id="pillUpdated">Not searched</div>
+        </div>
+        <div class="lt-actions">
+          <button class="lt-btn" id="btnModify" type="button">Modify</button>
+          <button class="lt-btn primary" id="btnNew" type="button">New Search</button>
+        </div>
       </div>
 
-      <section class="card">
-        <!-- Summary row (appears after search) -->
-        <div class="summary">
-          <div class="chips" id="summaryChips" style="display:none;">
-            <span class="chip" id="chipRoute">JFK → LHR</span>
-            <span class="chip muted" id="chipCount">0 flights</span>
-            <span class="chip muted" id="chipUpdated">Updated —</span>
+      <section class="lt-grid" id="trackerSection">
+        <!-- Left: Search Form -->
+        <div class="lt-card" id="formCard">
+          <div class="lt-livebadge"><span class="lt-dot"></span>LIVE</div>
+
+          <div class="lt-field">
+            <label class="lt-label" for="from">Origin (IATA)</label>
+            <input class="lt-input" id="from" inputmode="latin" autocomplete="off" placeholder="JFK" value="JFK" maxlength="3" />
           </div>
 
-          <div class="actions" id="summaryActions" style="display:none;">
-            <button class="btnGhost" id="btnModify" type="button">Modify</button>
-            <button class="btnGhost" id="btnNew" type="button">New Search</button>
+          <div class="lt-field">
+            <label class="lt-label" for="to">Destination (IATA)</label>
+            <input class="lt-input" id="to" inputmode="latin" autocomplete="off" placeholder="LHR" value="LHR" maxlength="3" />
           </div>
+
+          <div class="lt-field">
+            <label class="lt-label" for="flightNumber">Flight number (optional)</label>
+            <input class="lt-input" id="flightNumber" inputmode="latin" autocomplete="off" placeholder="e.g., BA178" />
+            <div class="lt-help" style="margin-top:6px;">
+              Tip: Route search shows all matching flights. Flight number filters the list.
+            </div>
+          </div>
+
+          <button class="lt-btn primary" id="btnTrack" type="button" style="width:100%; padding: 14px;">
+            🔍 Track Live Flights
+          </button>
+
+          <div class="lt-help" style="margin-top:10px;">
+            Try: <strong>JFK → LHR</strong>, <strong>LAX → NRT</strong>, <strong>ORD → FRA</strong>
+          </div>
+
+          <div id="formError" class="lt-error" style="display:none;"></div>
         </div>
 
-        <div class="grid">
-          <!-- LEFT: Search panel -->
-          <div class="panel">
-            <div class="badgeLive"><span class="dot"></span> LIVE</div>
-
-            <form id="trackerForm">
-              <div class="row2">
-                <div class="field">
-                  <label for="from">Origin (IATA)</label>
-                  <input class="input" id="from" type="text" inputmode="latin" maxlength="3" autocomplete="off" value="JFK" placeholder="JFK" />
-                </div>
-                <div class="field">
-                  <label for="to">Destination (IATA)</label>
-                  <input class="input" id="to" type="text" inputmode="latin" maxlength="3" autocomplete="off" value="LHR" placeholder="LHR" />
-                </div>
-              </div>
-
-              <button class="btn" id="btnTrack" type="submit">🔍 Track Live Flights</button>
-
-              <div class="helper">
-                Tip: try popular routes like <strong>JFK → LHR</strong>, <strong>LAX → NRT</strong>, <strong>ORD → FRA</strong>.
-              </div>
-
-              <div id="statusArea"></div>
-            </form>
-          </div>
-
-          <!-- RIGHT: Globe + results -->
-          <div class="panel">
-            <div id="resultsAnchor"></div>
-
-            <div class="globePanelHeader">
+        <!-- Right: Globe + Results -->
+        <div class="lt-card">
+          <div class="lt-globeWrap">
+            <div class="lt-globeHeader">
               <div>
-                <p class="globeTitle">3D Globe</p>
-                <p class="globeSub" id="globeSub">Search a route to plot flights in real time.</p>
+                <h3 style="margin:0;">3D Globe</h3>
+                <div class="sub" id="globeSub">Search a route to plot flights. Drag to rotate.</div>
               </div>
-              <div class="pill" id="globePill">Ready</div>
+              <div class="lt-badge" id="globeStatus">Idle</div>
             </div>
 
-            <div id="globe3d"></div>
-            <noscript class="helper">Enable JavaScript to see the 3D globe.</noscript>
+            <div id="globe" aria-label="3D globe visualization"></div>
 
-            <div class="flightList" id="flightList"></div>
+            <div class="lt-flights" id="flightsList"></div>
           </div>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- Your API client (updated version recommended) -->
-  <script src="./live-tracker-client.js"></script>
-
-  <!-- Three.js + OrbitControls + Globe -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="./globe-3d.js"></script>
-
-  <script>
-    // -------- helpers ----------
-    function normIata(v) {
-      return String(v || "").trim().toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
-    }
-
-    function fmtFeet(ft) {
-      const n = Number(ft);
-      if (!Number.isFinite(n)) return "—";
-      // FR lib may already provide feet; keep as feet
-      return `${Math.round(n / 1000)}k ft`;
-    }
-
-    function fmtKnots(kt) {
-      const n = Number(kt);
-      if (!Number.isFinite(n)) return "—";
-      return `${Math.round(n)} kt`;
-    }
-
-    function fmtDeg(d) {
-      const n = Number(d);
-      if (!Number.isFinite(n)) return "—";
-      return `${Math.round(n)}°`;
-    }
-
-    // -------- state ----------
-    const form = document.getElementById("trackerForm");
-    const fromEl = document.getElementById("from");
-    const toEl = document.getElementById("to");
-    const btnTrack = document.getElementById("btnTrack");
-
-    const statusArea = document.getElementById("statusArea");
-    const flightList = document.getElementById("flightList");
-
-    const summaryChips = document.getElementById("summaryChips");
-    const summaryActions = document.getElementById("summaryActions");
-    const chipRoute = document.getElementById("chipRoute");
-    const chipCount = document.getElementById("chipCount");
-    const chipUpdated = document.getElementById("chipUpdated");
-
-    const btnModify = document.getElementById("btnModify");
-    const btnNew = document.getElementById("btnNew");
-
-    const globeSub = document.getElementById("globeSub");
-    const globePill = document.getElementById("globePill");
-
-    // Optional: airport coords for destination marker
-    // We only need lat/lon for the DESTINATION marker.
-    const airportCoords = new Map();
-    async function loadAirportCoordsOnce() {
-      if (airportCoords.size) return airportCoords;
-
-      try {
-        // small open dataset
-        const res = await fetch("https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat");
-        const text = await res.text();
-        text.split("\n").filter(Boolean).forEach(line => {
-          const p = line.split(",").map(x => x.replace(/"/g, ""));
-          const iata = p[4];
-          const lat = Number(p[6]);
-          const lon = Number(p[7]);
-          if (iata && iata !== "\\N" && iata.length === 3 && Number.isFinite(lat) && Number.isFinite(lon)) {
-            airportCoords.set(iata.toUpperCase(), { lat, lon });
-          }
-        });
-      } catch {
-        // silently ignore — globe will still work with flight positions only
-      }
-      return airportCoords;
-    }
-
-    // -------- initialize globe ----------
-    let globe = null;
-    try {
-      globe = window.Globe3D?.init("globe3d");
-      if (globe) {
-        globePill.textContent = "Ready";
-      } else {
-        globePill.textContent = "No WebGL";
-        globeSub.textContent = "WebGL not supported on this browser/device.";
-      }
-    } catch (e) {
-      globePill.textContent = "Error";
-      globeSub.textContent = "Could not initialize 3D globe.";
-      console.error(e);
-    }
-
-    function setLoading(isLoading, label) {
-      btnTrack.disabled = isLoading;
-      btnTrack.textContent = isLoading ? (label || "🔄 Searching...") : "🔍 Track Live Flights";
-      globePill.textContent = isLoading ? "Searching…" : "Live";
-    }
-
-    function showError(msg, hint) {
-      statusArea.innerHTML = `
-        <div class="alert">
-          <h3>⚠️ Error</h3>
-          <p>${msg || "Request failed"}</p>
-          ${hint ? `<p style="margin-top:0.5rem;">${hint}</p>` : ""}
-        </div>
-      `;
-    }
-
-    function clearStatus() {
-      statusArea.innerHTML = "";
-    }
-
-    function renderFlights(from, to, flights) {
-      if (!Array.isArray(flights) || flights.length === 0) {
-        flightList.innerHTML = `
-          <div class="flightCard">
-            <div class="flightTop">
-              <div class="flightNo" style="color:#8a99b3;">No flights found</div>
-              <div class="pill">Try another route</div>
-            </div>
-            <div class="routeLine">${from} → ${to}</div>
-            <div style="color:#8a99b3; font-size:0.95rem; line-height:1.45;">
-              There may be no aircraft currently flying this exact route right now.
-              Try major routes like <strong>JFK → LHR</strong> or <strong>ORD → FRA</strong>.
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      flightList.innerHTML = flights.map(f => {
-        const flightNo = (f.number || f.id || "—");
-        const airline = (f.airline || "N/A");
-        return `
-          <div class="flightCard">
-            <div class="flightTop">
-              <div class="flightNo">${flightNo}</div>
-              <div class="pill">${airline}</div>
-            </div>
-            <div class="routeLine">${f.origin || from} → ${f.destination || to}</div>
-            <div class="metrics">
-              <div class="metric">
-                <span>Altitude</span>
-                <strong>${fmtFeet(f.altitude)}</strong>
-              </div>
-              <div class="metric">
-                <span>Speed</span>
-                <strong>${fmtKnots(f.speed)}</strong>
-              </div>
-              <div class="metric">
-                <span>Heading</span>
-                <strong>${fmtDeg(f.heading)}</strong>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function updateSummary(from, to, count) {
-      summaryChips.style.display = "flex";
-      summaryActions.style.display = "flex";
-
-      chipRoute.textContent = `${from} → ${to}`;
-      chipCount.textContent = `${count} flight${count === 1 ? "" : "s"}`;
-      chipUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-    }
-
-    function collapseForm(collapsed) {
-      // We collapse the LEFT panel content by collapsing the form's container panel padding area.
-      // Instead of complex DOM, we animate via max-height by wrapping panel children in a div.
-      // For simplicity: we visually "collapse" by hiding status and disabling inputs and just keeping summary up top.
-      // Mobile-friendly and stable.
-
-      // We’ll just disable inputs when collapsed
-      fromEl.disabled = collapsed;
-      toEl.disabled = collapsed;
-
-      if (!collapsed) {
-        fromEl.focus();
-      }
-    }
-
-    btnModify.addEventListener("click", () => {
-      // allow editing current search
-      collapseForm(false);
-      document.getElementById("resultsAnchor").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    btnNew.addEventListener("click", () => {
-      // reset all
-      fromEl.value = "JFK";
-      toEl.value = "LHR";
-      clearStatus();
-      flightList.innerHTML = "";
-      summaryChips.style.display = "none";
-      summaryActions.style.display = "none";
-      globeSub.textContent = "Search a route to plot flights in real time.";
-      globePill.textContent = "Ready";
-      collapseForm(false);
-
-      try {
-        window.Globe3D?.setFlights([]);
-      } catch {}
-      document.getElementById("resultsAnchor").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    // -------- main submit handler ----------
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const from = normIata(fromEl.value);
-      const to = normIata(toEl.value);
-
-      fromEl.value = from;
-      toEl.value = to;
-
-      if (!from || from.length !== 3 || !to || to.length !== 3) {
-        showError("Please enter valid 3-letter IATA codes (e.g., JFK, LHR).");
-        return;
-      }
-      if (from === to) {
-        showError("Origin and destination cannot be the same.");
-        return;
-      }
-
-      clearStatus();
-      flightList.innerHTML = `<div class="helper" style="text-align:center; padding: 0.75rem 0;">Loading live flights…</div>`;
-      globeSub.textContent = `Plotting live flights for ${from} → ${to}…`;
-      setLoading(true, "🔄 Searching FlightRadar24…");
-
-      // Slide results area to top smoothly (your vision)
-      document.getElementById("resultsAnchor").scrollIntoView({ behavior: "smooth", block: "start" });
-
-      // Load airport coords for destination marker (optional)
-      await loadAirportCoordsOnce();
-      try {
-        window.Globe3D?.setRoute({ toIata: to, airportCoords });
-      } catch {}
-
-      try {
-        // trackFlightsByRoute is defined in live-tracker-client.js
-        const result = await window.trackFlightsByRoute(from, to);
-
-        if (!result || result.success === false) {
-          const msg = result?.error || "Search failed";
-          showError(msg, "If you deployed on Vercel, ensure you have a serverless route at /api/live/route.");
-          flightList.innerHTML = "";
-          globePill.textContent = "Error";
-          globeSub.textContent = "Couldn’t load live flights. Check API deployment.";
-          try { window.Globe3D?.setFlights([]); } catch {}
-          return;
-        }
-
-        const flights = result.flights || [];
-        updateSummary(from, to, flights.length);
-
-        // Render list + globe
-        renderFlights(from, to, flights);
-        try { window.Globe3D?.setFlights(flights); } catch {}
-
-        globePill.textContent = flights.length ? "Live" : "No flights";
-        globeSub.textContent = flights.length
-          ? `Showing ${flights.length} aircraft for ${from} → ${to}. Drag to rotate.`
-          : `No aircraft currently found for ${from} → ${to}. Try a major route.`;
-
-        // “Collapse” form (lightweight) once results show
-        collapseForm(true);
-
-      } catch (err) {
-        showError(err.message || "Unexpected error");
-        flightList.innerHTML = "";
-        globePill.textContent = "Error";
-        globeSub.textContent = "Couldn’t load live flights.";
-        try { window.Globe3D?.setFlights([]); } catch {}
-      } finally {
-        setLoading(false);
-      }
-    });
-  </script>
+  <script defer src="./live-tracker-client.js"></script>
 </body>
 </html>
