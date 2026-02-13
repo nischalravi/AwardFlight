@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "nodemon server.js",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix"
   },
   "keywords": [
     "award flights",
@@ -24,7 +26,10 @@
     "flightradarapi": "^1.4.0",
     "helmet": "^8.1.0"
   },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.18.0"
   }
 }

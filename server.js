@@ -1,3 +1,5 @@
+// server.js — production-hardened baseline (Express + Amadeus + FlightRadar + Kiwi optional)
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,7 +11,11 @@ require('dotenv').config();
 const { FlightRadar24API } = require('flightradarapi');
 
 const app = express();
+app.disable('x-powered-by');
+
 const PORT = process.env.PORT || 3000;
+const isProd = process.env.NODE_ENV === 'production';
+
 const fr24 = new FlightRadar24API();
 
 // ===== ENV (no hardcoding) =====
@@ -22,38 +28,70 @@ if (!AMADEUS_CLIENT_ID || !AMADEUS_CLIENT_SECRET) {
 }
 
 // ===== Security middleware =====
-app.use(helmet());
-app.use(express.json());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(express.json({ limit: '100kb' }));
 
 // ===== CORS lockdown =====
+const defaultDevOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000'
+];
+
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, cb) {
-    // Allow curl/postman (no origin)
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.length === 0) return cb(null, true); // fallback: allow all if not configured (dev)
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error('CORS blocked'), false);
-  },
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const finalOrigins = allowedOrigins.length ? allowedOrigins : (isProd ? [] : defaultDevOrigins);
 
-// ===== Rate limiting for API =====
-app.use('/api', rateLimit({
-  windowMs: 60 * 1000,
-  max: 60, // 60 req/min per IP
-  standardHeaders: true,
-  legacyHeaders: false
-}));
+app.use(
+  cors({
+    origin: function (origin, cb) {
+      // Allow curl/postman/server-to-server (no Origin)
+      if (!origin) return cb(null, true);
 
-// ===== Static hosting =====
-app.use(express.static(__dirname));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+      // In prod, force explicit allowlist
+      if (!finalOrigins.length) return cb(new Error('CORS not configured'), false);
+
+      if (finalOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error('CORS blocked'), false);
+    },
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
+
+// ===== Rate limiting (global API) =====
+app.use(
+  '/api',
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, slow down' }
+  })
+);
+
+// ===== Rate limiting (expensive endpoints tighter) =====
+app.use(
+  '/api/amadeus',
+  rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Rate limit exceeded for flight search' }
+  })
+);
+
+// ===== Static hosting (SECURE) =====
+// IMPORTANT: Move your frontend files into ./public
+// Example: public/index.html, public/search.html, public/styles.css, public/*.js
+const PUBLIC_DIR = path.join(__dirname, 'public');
+app.use(express.static(PUBLIC_DIR));
+app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
 
 // ============================================
 // Validation helpers
@@ -91,11 +129,10 @@ async function getAmadeusToken() {
   body.append('client_secret', AMADEUS_CLIENT_SECRET);
 
   try {
-    const response = await axios.post(
-      `${AMADEUS_BASE_URL}/v1/security/oauth2/token`,
-      body,
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 15000 }
-    );
+    const response = await axios.post(`${AMADEUS_BASE_URL}/v1/security/oauth2/token`, body, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      timeout: 15000
+    });
 
     const token = response.data?.access_token;
     const expiresIn = response.data?.expires_in;
@@ -104,7 +141,7 @@ async function getAmadeusToken() {
 
     amadeusToken = token;
     // refresh 30 seconds early
-    tokenExpiry = Date.now() + (Math.max(30, expiresIn - 30) * 1000);
+    tokenExpiry = Date.now() + Math.max(30, expiresIn - 30) * 1000;
 
     console.log('✅ Amadeus token obtained');
     return amadeusToken;
@@ -127,6 +164,9 @@ app.get('/api/amadeus/search', async (req, res) => {
   if (!isIata(from) || !isIata(to)) {
     return res.status(400).json({ error: 'from/to must be valid 3-letter IATA codes' });
   }
+  if (from === to) {
+    return res.status(400).json({ error: 'from and to cannot be the same' });
+  }
   if (!isISODate(date)) {
     return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
   }
@@ -139,21 +179,18 @@ app.get('/api/amadeus/search', async (req, res) => {
 
     const token = await getAmadeusToken();
 
-    const response = await axios.get(
-      `${AMADEUS_BASE_URL}/v2/shopping/flight-offers`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          originLocationCode: from,
-          destinationLocationCode: to,
-          departureDate: date,
-          adults,
-          max: 50,
-          currencyCode: 'USD'
-        },
-        timeout: 15000
-      }
-    );
+    const response = await axios.get(`${AMADEUS_BASE_URL}/v2/shopping/flight-offers`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        originLocationCode: from,
+        destinationLocationCode: to,
+        departureDate: date,
+        adults,
+        max: 50,
+        currencyCode: 'USD'
+      },
+      timeout: 15000
+    });
 
     const offers = Array.isArray(response.data?.data) ? response.data.data : [];
     if (offers.length === 0) {
@@ -167,12 +204,16 @@ app.get('/api/amadeus/search', async (req, res) => {
       const last = segs[segs.length - 1];
       const airlineCode = offer.validatingAirlineCodes?.[0] || 'XX';
 
+      // Prefer real flight numbers when present
+      const firstSegCarrier = segs?.[0]?.carrierCode;
+      const firstSegNumber = segs?.[0]?.number;
+      const flightCode = firstSegCarrier && firstSegNumber ? `${firstSegCarrier} ${firstSegNumber}` : airlineCode;
+
       return {
         id: index + 1,
         airline: getAirlineName(airlineCode),
         airlineCode,
-        // NOTE: Random flight number is misleading; better to omit or derive from segments
-        code: airlineCode,
+        code: flightCode,
         aircraft: first?.aircraft?.code || 'Unknown',
         logo: '✈',
         logoColor: getAirlineColor(airlineCode),
@@ -187,11 +228,10 @@ app.get('/api/amadeus/search', async (req, res) => {
         stopInfo: segs.length <= 1 ? 'Non-stop' : `${segs.length - 1} stop${segs.length - 1 > 1 ? 's' : ''}`,
         departTimeCategory: first ? getTimeCategory(first.departure.at) : null,
 
-        // IMPORTANT: these are not real award miles (Amadeus = cash fares)
+        // NOTE: Amadeus returns cash fares; award values below are estimates for UX only
         awardMiles: estimateAwardMiles(airlineCode),
         transferPartners: getTransferPartners(airlineCode),
 
-        // keep raw segments for future UI improvements
         segments: segs.map(s => ({
           from: s.departure?.iataCode,
           to: s.arrival?.iataCode,
@@ -205,12 +245,11 @@ app.get('/api/amadeus/search', async (req, res) => {
 
     console.log(`✅ Returning ${flights.length} flights from Amadeus`);
     res.json({ success: true, count: flights.length, flights });
-
   } catch (error) {
     const status = error.response?.status || 500;
     console.error('❌ Amadeus error:', status, error.message);
 
-    // If token expired, clear it so next request refreshes
+    // If token expired/invalid, clear it so next request refreshes
     if (status === 401) {
       amadeusToken = null;
       tokenExpiry = 0;
@@ -226,18 +265,17 @@ app.get('/api/amadeus/search', async (req, res) => {
 });
 
 // ============================================
-// KIWI SEARCH (make it optional / safe)
+// KIWI SEARCH (optional)
 // ============================================
 app.get('/api/kiwi/search', async (req, res) => {
   const from = normIata(req.query.from);
   const to = normIata(req.query.to);
   const date = String(req.query.date || '').trim();
 
-  if (!isIata(from) || !isIata(to) || !isISODate(date)) {
+  if (!isIata(from) || !isIata(to) || !isISODate(date) || from === to) {
     return res.status(400).json({ error: 'Invalid from/to/date' });
   }
 
-  // If you don’t configure a key, return a clear response instead of failing
   const KIWI_KEY = process.env.KIWI_API_KEY;
   if (!KIWI_KEY) {
     return res.status(501).json({ error: 'Kiwi not configured', hint: 'Set KIWI_API_KEY in env' });
@@ -264,8 +302,16 @@ app.get('/api/kiwi/search', async (req, res) => {
       price: Math.round(flight.price || 0),
       from: flight.flyFrom,
       to: flight.flyTo,
-      departTime: new Date(flight.dTimeUTC * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-      arriveTime: new Date(flight.aTimeUTC * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      departTime: new Date(flight.dTimeUTC * 1000).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }),
+      arriveTime: new Date(flight.aTimeUTC * 1000).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }),
       stops: (flight.route?.length || 1) - 1
     }));
 
@@ -277,30 +323,28 @@ app.get('/api/kiwi/search', async (req, res) => {
 });
 
 // ============================================
-// FLIGHTRADAR24 LIVE ROUTE (add caching)
+// FLIGHTRADAR24 LIVE ROUTE (cached)
 // ============================================
 let frCache = { at: 0, flights: [] };
-const FR_CACHE_TTL_MS = 30 * 1000; // 30 seconds
+const FR_CACHE_TTL_MS = 30 * 1000;
 
 app.get('/api/live/route', async (req, res) => {
   const from = normIata(req.query.from);
   const to = normIata(req.query.to);
 
-  if (!isIata(from) || !isIata(to)) {
+  if (!isIata(from) || !isIata(to) || from === to) {
     return res.status(400).json({ error: 'from/to must be valid IATA' });
   }
 
   try {
-    // cache global flight fetch to reduce load
     const now = Date.now();
-    if (!frCache.flights.length || (now - frCache.at) > FR_CACHE_TTL_MS) {
+    if (!frCache.flights.length || now - frCache.at > FR_CACHE_TTL_MS) {
       frCache.flights = await fr24.getFlights();
       frCache.at = now;
     }
 
-    const filtered = frCache.flights.filter(f =>
-      f.originAirportIata === from &&
-      f.destinationAirportIata === to
+    const filtered = frCache.flights.filter(
+      f => f.originAirportIata === from && f.destinationAirportIata === to
     );
 
     const formatted = filtered.map(f => ({
@@ -337,31 +381,44 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// Helper functions (kept from your original)
+// Helper functions
 // ============================================
 function getAirlineName(code) {
   const names = {
-    'AF': 'Air France', 'BA': 'British Airways', 'LH': 'Lufthansa',
-    'EK': 'Emirates', 'DL': 'Delta', 'AA': 'American Airlines',
-    'UA': 'United', 'KL': 'KLM', 'IB': 'Iberia', 'AZ': 'ITA Airways',
-    '6E': 'IndiGo', 'AI': 'Air India', 'SG': 'SpiceJet', 'AS': 'Alaska',
-    'B6': 'JetBlue', 'F9': 'Frontier', 'NK': 'Spirit', 'WN': 'Southwest'
+    AF: 'Air France',
+    BA: 'British Airways',
+    LH: 'Lufthansa',
+    EK: 'Emirates',
+    DL: 'Delta',
+    AA: 'American Airlines',
+    UA: 'United',
+    KL: 'KLM',
+    IB: 'Iberia',
+    AZ: 'ITA Airways',
+    '6E': 'IndiGo',
+    AI: 'Air India',
+    SG: 'SpiceJet',
+    AS: 'Alaska',
+    B6: 'JetBlue',
+    F9: 'Frontier',
+    NK: 'Spirit',
+    WN: 'Southwest'
   };
   return names[code] || code;
 }
 
 function getAirlineColor(code) {
   const colors = {
-    'AF': 'linear-gradient(135deg, #e74c3c, #c0392b)',
-    'BA': 'linear-gradient(135deg, #3498db, #2980b9)',
-    'LH': 'linear-gradient(135deg, #f39c12, #e67e22)',
-    'EK': 'linear-gradient(135deg, #c0392b, #e74c3c)',
-    'DL': 'linear-gradient(135deg, #e74c3c, #c0392b)',
-    'AA': 'linear-gradient(135deg, #3498db, #2980b9)',
-    'UA': 'linear-gradient(135deg, #3498db, #2980b9)',
-    'AS': 'linear-gradient(135deg, #1abc9c, #16a085)',
-    'B6': 'linear-gradient(135deg, #3498db, #2980b9)',
-    'WN': 'linear-gradient(135deg, #e67e22, #d35400)'
+    AF: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+    BA: 'linear-gradient(135deg, #3498db, #2980b9)',
+    LH: 'linear-gradient(135deg, #f39c12, #e67e22)',
+    EK: 'linear-gradient(135deg, #c0392b, #e74c3c)',
+    DL: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+    AA: 'linear-gradient(135deg, #3498db, #2980b9)',
+    UA: 'linear-gradient(135deg, #3498db, #2980b9)',
+    AS: 'linear-gradient(135deg, #1abc9c, #16a085)',
+    B6: 'linear-gradient(135deg, #3498db, #2980b9)',
+    WN: 'linear-gradient(135deg, #e67e22, #d35400)'
   };
   return colors[code] || 'linear-gradient(135deg, #8e44ad, #9b59b6)';
 }
@@ -371,7 +428,6 @@ function formatTime(iso) {
 }
 
 function formatDuration(iso) {
-  // supports PT#H#M, PT#H, PT#M
   const h = iso.match(/PT(\d+)H/);
   const m = iso.match(/PT(?:\d+H)?(\d+)M/);
   const hh = h ? Number(h[1]) : 0;
@@ -386,31 +442,52 @@ function getTimeCategory(iso) {
 
 function estimateAwardMiles(code) {
   const miles = {
-    'AF': { program: 'Flying Blue', economyClass: 25000, businessClass: 55000, firstClass: 90000 },
-    'BA': { program: 'Avios', economyClass: 26000, businessClass: 68000, firstClass: 102000 },
-    'LH': { program: 'Miles & More', economyClass: 30000, businessClass: 70000, firstClass: 110000 },
-    'EK': { program: 'Skywards', economyClass: 40000, businessClass: 85000, firstClass: 180000 },
-    'DL': { program: 'SkyMiles', economyClass: 30000, businessClass: 75000, firstClass: 120000 },
-    'AA': { program: 'AAdvantage', economyClass: 30000, businessClass: 57500, firstClass: 85000 },
-    'UA': { program: 'MileagePlus', economyClass: 30000, businessClass: 60000, firstClass: 88000 },
-    'AS': { program: 'Mileage Plan', economyClass: 20000, businessClass: 50000, firstClass: 70000 },
-    'B6': { program: 'TrueBlue', economyClass: 25000, businessClass: 60000, firstClass: 85000 }
+    AF: { program: 'Flying Blue', economyClass: 25000, businessClass: 55000, firstClass: 90000 },
+    BA: { program: 'Avios', economyClass: 26000, businessClass: 68000, firstClass: 102000 },
+    LH: { program: 'Miles & More', economyClass: 30000, businessClass: 70000, firstClass: 110000 },
+    EK: { program: 'Skywards', economyClass: 40000, businessClass: 85000, firstClass: 180000 },
+    DL: { program: 'SkyMiles', economyClass: 30000, businessClass: 75000, firstClass: 120000 },
+    AA: { program: 'AAdvantage', economyClass: 30000, businessClass: 57500, firstClass: 85000 },
+    UA: { program: 'MileagePlus', economyClass: 30000, businessClass: 60000, firstClass: 88000 },
+    AS: { program: 'Mileage Plan', economyClass: 20000, businessClass: 50000, firstClass: 70000 },
+    B6: { program: 'TrueBlue', economyClass: 25000, businessClass: 60000, firstClass: 85000 }
   };
   return miles[code] || { program: 'Partner', economyClass: 30000, businessClass: 60000, firstClass: 100000 };
 }
 
 function getTransferPartners(code) {
   const partners = {
-    'AF': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }, { name: 'Chase UR', ratio: '1:1', class: 'chase' }, { name: 'Citi TYP', ratio: '1:1', class: 'citi' }],
-    'BA': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }, { name: 'Chase UR', ratio: '1:1', class: 'chase' }],
-    'LH': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }, { name: 'Chase UR', ratio: '1:1', class: 'chase' }],
-    'EK': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }],
-    'DL': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }],
-    'AA': [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }, { name: 'Citi TYP', ratio: '1:1', class: 'citi' }],
-    'UA': [{ name: 'Chase UR', ratio: '1:1', class: 'chase' }]
+    AF: [
+      { name: 'Amex MR', ratio: '1:1', class: 'amex' },
+      { name: 'Chase UR', ratio: '1:1', class: 'chase' },
+      { name: 'Citi TYP', ratio: '1:1', class: 'citi' }
+    ],
+    BA: [
+      { name: 'Amex MR', ratio: '1:1', class: 'amex' },
+      { name: 'Chase UR', ratio: '1:1', class: 'chase' }
+    ],
+    LH: [
+      { name: 'Amex MR', ratio: '1:1', class: 'amex' },
+      { name: 'Chase UR', ratio: '1:1', class: 'chase' }
+    ],
+    EK: [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }],
+    DL: [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }],
+    AA: [
+      { name: 'Amex MR', ratio: '1:1', class: 'amex' },
+      { name: 'Citi TYP', ratio: '1:1', class: 'citi' }
+    ],
+    UA: [{ name: 'Chase UR', ratio: '1:1', class: 'chase' }]
   };
   return partners[code] || [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }];
 }
+
+// ============================================
+// Global error handler (last middleware)
+// ============================================
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 // ============================================
 // START SERVER
