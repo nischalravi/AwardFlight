@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Flight Tracker - Award Flights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container-header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon"></div>
+                <span>Award Flights</span>
+            </a>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="search.html">Search Flights</a>
+                <a href="live-tracker.html" class="active">Live Tracker</a>
+                <a href="calculator.html">Points Calculator</a>
+                <a href="deals.html">Hot Deals</a>
+            </nav>
+        </div>
+    </header>
+
+    <main style="padding: 140px 2rem 2rem; min-height: 100vh;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h1 style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🛰️ Live Flight Tracker</h1>
+            <p style="text-align: center; color: #8a99b3; margin-bottom: 3rem; font-size: 1.1rem;">Track real-time flights using FlightRadar24</p>
+            
+            <div style="background: #1e2836; padding: 3rem; border-radius: 20px; border: 1px solid #2a3644;">
+                <div style="background: #c5ff68; color: #0a0f1e; padding: 0.75rem 1rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; font-weight: 700;">
+                    <div style="width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;"></div>
+                    LIVE
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: #8a99b3; font-weight: 600;">Origin Airport (IATA Code)</label>
+                    <input type="text" id="from" value="JFK" placeholder="JFK" style="width: 100%; padding: 1rem; background: #0a0f1e; border: 1px solid #2a3644; border-radius: 10px; color: #fff; font-size: 1rem; font-family: inherit;">
+                </div>
+                
+                <div style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: #8a99b3; font-weight: 600;">Destination Airport (IATA Code)</label>
+                    <input type="text" id="to" value="LHR" placeholder="LHR" style="width: 100%; padding: 1rem; background: #0a0f1e; border: 1px solid #2a3644; border-radius: 10px; color: #fff; font-size: 1rem; font-family: inherit;">
+                </div>
+                
+                <button onclick="track()" id="btn" style="width: 100%; padding: 1.25rem; background: linear-gradient(135deg, #c5ff68, #a8e050); color: #0a0f1e; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; font-family: inherit; transition: all 0.3s;">
+                    🔍 Track Live Flights
+                </button>
+                
+                <div id="result" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function track() {
+            const from = document.getElementById('from').value.toUpperCase();
+            const to = document.getElementById('to').value.toUpperCase();
+            const btn = document.getElementById('btn');
+            const result = document.getElementById('result');
+            
+            if (!from || !to) {
+                alert('Please enter both airports');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 Searching FlightRadar24...';
+            result.innerHTML = '<p style="text-align: center; color: #8a99b3;">Loading live flights...</p>';
+            
+            try {
+                const res = await fetch('/api/live/route?from=' + from + '&to=' + to);
+                const data = await res.json();
+                
+                if (data.success && data.flights.length > 0) {
+                    let html = '<h3 style="color: #c5ff68; margin-bottom: 1.5rem; text-align: center;">✈️ Found ' + data.count + ' Live Flights</h3>';
+                    
+                    data.flights.forEach(f => {
+                        html += '<div style="background: #0a0f1e; padding: 1.25rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #2a3644;">' +
+                            '<div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">' +
+                            '<div style="font-weight: 700; font-size: 1.1rem;">' + (f.number || f.id) + '</div>' +
+                            '<div style="background: #2a3644; padding: 0.25rem 0.75rem; border-radius: 6px; font-size: 0.85rem;">' + (f.airline || 'N/A') + '</div>' +
+                            '</div>' +
+                            '<div style="color: #8a99b3; margin-bottom: 0.75rem;">' + f.origin + ' → ' + f.destination + '</div>' +
+                            '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; font-size: 0.9rem;">' +
+                            '<div><span style="color: #8a99b3;">Altitude:</span><br><strong style="color: #c5ff68;">' + Math.round(f.altitude/1000) + 'k ft</strong></div>' +
+                            '<div><span style="color: #8a99b3;">Speed:</span><br><strong style="color: #c5ff68;">' + f.speed + ' kt</strong></div>' +
+                            '<div><span style="color: #8a99b3;">Heading:</span><br><strong style="color: #c5ff68;">' + f.heading + '°</strong></div>' +
+                            '</div></div>';
+                    });
+                    
+                    result.innerHTML = html;
+                } else {
+                    result.innerHTML = '<div style="text-align: center; padding: 2rem; background: #0a0f1e; border-radius: 12px; border: 1px solid #2a3644;">' +
+                        '<h3 style="color: #8a99b3; margin-bottom: 0.5rem;">No Flights Found</h3>' +
+                        '<p style="color: #8a99b3; font-size: 0.95rem;">No flights currently flying this route.<br>Try: JFK → LHR or LAX → NRT</p>' +
+                        '</div>';
+                }
+            } catch (err) {
+                result.innerHTML = '<div style="background: #2a1e1e; padding: 2rem; border-radius: 12px; border: 1px solid #e74c3c;">' +
+                    '<h3 style="color: #e74c3c; margin-bottom: 0.5rem;">⚠️ Error</h3>' +
+                    '<p style="color: #8a99b3;">' + err.message + '</p>' +
+                    '<p style="color: #8a99b3; font-size: 0.9rem; margin-top: 1rem;">Make sure the server is running: npm start</p>' +
+                    '</div>';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 Track Live Flights';
+            }
+        }
+    </script>
+</body>
+</html>

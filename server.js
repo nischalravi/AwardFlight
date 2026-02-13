@@ -1,4 +1,11 @@
 // server.js — production-hardened baseline (Express + Amadeus + FlightRadar + Kiwi optional)
+// - Serves static files from ./public
+// - CORS allowlist (required in prod)
+// - Rate limits (/api + tighter /api/amadeus)
+// - Token caching for Amadeus
+// - Optional dev mock route (/api/mock/search)
+// - Global error handler
+// - Correct middleware/route order (mock route BEFORE error handler, listen at end)
 
 const express = require('express');
 const cors = require('cors');
@@ -28,6 +35,8 @@ if (!AMADEUS_CLIENT_ID || !AMADEUS_CLIENT_SECRET) {
 }
 
 // ===== Security middleware =====
+// CSP disabled for now because you have inline scripts/styles in HTML.
+// Long-term: move inline JS/CSS to files and enable CSP.
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '100kb' }));
 
@@ -43,6 +52,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .map(s => s.trim())
   .filter(Boolean);
 
+// In prod: must be explicitly configured
 const finalOrigins = allowedOrigins.length ? allowedOrigins : (isProd ? [] : defaultDevOrigins);
 
 app.use(
@@ -57,7 +67,7 @@ app.use(
       if (finalOrigins.includes(origin)) return cb(null, true);
       return cb(new Error('CORS blocked'), false);
     },
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
@@ -87,8 +97,7 @@ app.use(
 );
 
 // ===== Static hosting (SECURE) =====
-// IMPORTANT: Move your frontend files into ./public
-// Example: public/index.html, public/search.html, public/styles.css, public/*.js
+// IMPORTANT: frontend files live in ./public
 const PUBLIC_DIR = path.join(__dirname, 'public');
 app.use(express.static(PUBLIC_DIR));
 app.get('/', (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
@@ -150,6 +159,46 @@ async function getAmadeusToken() {
     console.error('❌ Amadeus auth failed:', status || '', error.message);
     throw new Error('Amadeus authentication failed');
   }
+}
+
+// ============================================
+// DEV MOCK SEARCH (only in non-prod)
+// Keep this BEFORE the global error handler and BEFORE app.listen
+// ============================================
+if (!isProd) {
+  app.get('/api/mock/search', (req, res) => {
+    const from = normIata(req.query.from || 'BOS');
+    const to = normIata(req.query.to || 'BLR');
+
+    return res.json({
+      success: true,
+      count: 1,
+      flights: [
+        {
+          id: 1,
+          airline: 'Demo Airline',
+          airlineCode: 'DM',
+          code: 'DM 123',
+          aircraft: 'A320',
+          logo: '✈',
+          logoColor: 'linear-gradient(135deg, #4a9cff, #357abd)',
+          price: 499,
+          currency: 'USD',
+          departTime: '9:00 AM',
+          arriveTime: '1:30 PM',
+          departAirport: from,
+          arriveAirport: to,
+          duration: '14h 30m',
+          stops: 1,
+          stopInfo: '1 stop',
+          departTimeCategory: 'morning',
+          awardMiles: { program: 'Demo', economyClass: 25000, businessClass: 60000, firstClass: 90000 },
+          transferPartners: [{ name: 'Amex MR', ratio: '1:1', class: 'amex' }],
+          segments: []
+        }
+      ]
+    });
+  });
 }
 
 // ============================================
