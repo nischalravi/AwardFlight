@@ -924,7 +924,7 @@ async function loadRealFlights() {
     console.log('🔍 Calling Amadeus:', from, '→', to);
     
     try {
-        const res = await fetch(`/api/amadeus/search?from=${from}&to=${to}&date=${date}`);
+        const res = await fetch(`/api/mock/search?from=${from}&to=${to}&date=${date}`);
         const data = await res.json();
         
         if (data.success && data.flights.length > 0) {
@@ -953,7 +953,7 @@ async function loadRealFlights() {
     console.log('🔍 Amadeus:', from, '→', to, 'on', date);
     
     try {
-        const res = await fetch('/api/amadeus/search?from=' + from + '&to=' + to + '&date=' + date);
+        const res = await fetch('/api/mock/search?from=' + from + '&to=' + to + '&date=' + date);
         const data = await res.json();
         
         if (data.success && data.flights.length > 0) {
