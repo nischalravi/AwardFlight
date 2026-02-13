@@ -440,3 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 console.log('✅ Search page initialized with award miles data');
+
+// Export functions
+window.renderFlights = renderFlights;
+window.applyFilters = applyFilters;
+console.log('✅ Search ready');

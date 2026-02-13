@@ -228,3 +228,7 @@ const flightDatabase = [
 
 // Export to window for global access
 window.flightDatabase = flightDatabase;
+
+// Export to window
+window.flightDatabase = flightDatabase;
+console.log('✅ Loaded', flightDatabase.length, 'flights');
