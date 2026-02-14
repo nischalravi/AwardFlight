@@ -37,10 +37,10 @@ async function downloadAirports() {
         const blob = new Blob([jsCode], { type: 'text/javascript' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'airports-database.js';
+// DISABLED: link.download = 'airports-database.js';
         link.click();
         
-        console.log('📥 airports-database.js downloaded!');
+// DISABLED: console.log('📥 airports-database.js downloaded!');
         
         return airports;
         
