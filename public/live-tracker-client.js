@@ -390,6 +390,7 @@
 
   // Init
 window.addEventListener("DOMContentLoaded", () => {
+  
   // Attach now (works if DB already present)
   attachAutocomplete(els.from);
   attachAutocomplete(els.to);
