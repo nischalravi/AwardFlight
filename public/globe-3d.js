@@ -1,131 +1,152 @@
 // public/globe-3d.js
+// Renders:
+// - ALL flights as points
+// - SELECTED flight as a big "✈" sprite (always visible)
+// API:
+//   window.Globe3D.setFlights(flights)
+//   window.Globe3D.setSelectedFlight(flightId)
+
 (function () {
-  let globe = null;
-  let globeEl = null;
-  let flights = [];
-  let selectedId = null;
-
-  function validFlight(f) {
-    return f && Number.isFinite(+f.latitude) && Number.isFinite(+f.longitude);
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
   }
 
-  function ensureSize() {
-    if (!globe || !globeEl) return;
-    const w = globeEl.clientWidth;
-    const h = globeEl.clientHeight;
-    if (w > 0 && h > 0) {
-      globe.width(w);
-      globe.height(h);
-      try {
-        globe.renderer().setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-      } catch (_) {}
-    }
-  }
+  ready(() => {
+    const globeEl = document.getElementById("globe");
+    if (!globeEl) return;
 
-  function render() {
-    if (!globe) return;
+    // Wait until globe.gl has loaded and created window.Globe()
+    const waitForGlobe = () => {
+      if (!window.Globe || !window.THREE) return setTimeout(waitForGlobe, 50);
+      init();
+    };
+    waitForGlobe();
 
-    const pts = flights
-      .filter(validFlight)
-      .map((f) => ({
-        id: f.id,
-        number: f.number,
-        airline: f.airline,
-        lat: +f.latitude,
-        lng: +f.longitude,
-      }));
+    function init() {
+      let flights = [];
+      let selectedId = null;
 
-    globe.pointsData(pts);
+      // ---- plane sprite factory (canvas texture) ----
+      function makePlaneSprite(headingDeg) {
+        const size = 256;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
 
-    const sel = flights.find((f) => f && f.id === selectedId && validFlight(f));
-    if (sel) {
-      globe.labelsData([
-        { lat: +sel.latitude, lng: +sel.longitude, text: `✈ ${sel.number || sel.id || ""}`.trim() },
-      ]);
-      globe.labelText((d) => d.text);
-      globe.pointOfView({ lat: +sel.latitude, lng: +sel.longitude, altitude: 1.6 }, 900);
-    } else {
-      globe.labelsData([]);
-    }
-  }
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, size, size);
 
-  function initNow() {
-    globeEl = document.getElementById("globe");
-    if (!globeEl) return false;
-    if (typeof window.Globe !== "function") return false;
+        // Draw a clear, big plane icon
+        ctx.font = "180px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
-    globe = window.Globe()(globeEl)
-      .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
-      .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
-      .backgroundColor("#0a0f1e")
-      .pointAltitude(0.02)
-      .pointRadius(0.35)
-      .pointColor(() => "#c5ff68")
-      .labelAltitude(0.05)
-      .labelSize(1.2)
-      .labelDotRadius(0.25)
-      .labelColor(() => "#c5ff68")
-      .pointsData([])
-      .labelsData([]);
+        // glow
+        ctx.shadowColor = "rgba(197,255,104,0.85)";
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = "#c5ff68";
+        ctx.fillText("✈", size / 2, size / 2);
 
-    globe.controls().enableDamping = true;
-    globe.controls().dampingFactor = 0.08;
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
 
-    ensureSize();
-    requestAnimationFrame(ensureSize);
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          depthWrite: false,
+          depthTest: true,
+        });
 
-    globe.pointOfView({ lat: 20, lng: 0, altitude: 2.2 }, 0);
-    render();
+        const sprite = new THREE.Sprite(material);
 
-    window.addEventListener("resize", () => {
-      ensureSize();
-    });
+        // Size in 3D world (tweak if you want bigger/smaller)
+        sprite.scale.set(12, 12, 1);
 
-    return true;
-  }
+        // Rotate to heading (Globe is in 3D; sprite rotation is screen-facing, but rotateZ still helps)
+        const heading = Number(headingDeg);
+        if (Number.isFinite(heading)) {
+          sprite.material.rotation = (-heading * Math.PI) / 180; // negate so it “points” correctly
+        }
 
-  // Public API (used by live-tracker-client.js)
-  function setFlights(next) {
-    flights = Array.isArray(next) ? next : [];
-    if (flights.length && !selectedId) selectedId = flights[0].id;
-    ensureSize();
-    render();
-  }
-
-  function setSelectedFlight(id) {
-    selectedId = id || null;
-    render();
-  }
-
-  function clear() {
-    flights = [];
-    selectedId = null;
-    if (globe) {
-      globe.pointsData([]);
-      globe.labelsData([]);
-    }
-  }
-
-  window.Globe3D = { setFlights, setSelectedFlight, clear };
-
-  // Self-initialize without touching autocomplete code
-  function boot() {
-    let tries = 0;
-    const timer = setInterval(() => {
-      tries++;
-      if (initNow()) {
-        clearInterval(timer);
+        return sprite;
       }
-      if (tries > 200) {
-        clearInterval(timer);
-        console.warn("Globe failed to initialize: #globe or window.Globe missing.");
-      }
-    }, 50);
-  }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
-  } else {
-    boot();
-  }
+      function validLatLng(f) {
+        return Number.isFinite(f?.latitude) && Number.isFinite(f?.longitude);
+      }
+
+      const globe = Globe()(globeEl)
+        .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
+        .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+        .backgroundColor("#0a0f1e")
+        // --- points (all flights) ---
+        .pointAltitude(0.02)
+        .pointRadius(0.30)
+        .pointColor(() => "#c5ff68")
+        .pointsData([])
+        .pointLabel((d) => d.number || d.id || "")
+        // --- selected plane as object sprite ---
+        .objectsData([])
+        .objectLat((d) => d.latitude)
+        .objectLng((d) => d.longitude)
+        .objectAltitude(() => 0.06) // lift plane slightly above surface
+        .objectThreeObject((d) => makePlaneSprite(d.heading));
+
+      // Controls / initial camera
+      globe.controls().enableDamping = true;
+      globe.controls().dampingFactor = 0.08;
+      globe.pointOfView({ lat: 20, lng: 0, altitude: 2.2 }, 0);
+
+      // Keep the canvas sized to its container
+      function resize() {
+        try {
+          globe.width(globeEl.clientWidth);
+          globe.height(globeEl.clientHeight);
+        } catch (_) {}
+      }
+      window.addEventListener("resize", resize);
+      setTimeout(resize, 0);
+
+      function render() {
+        // All flight points
+        const pts = flights
+          .filter(validLatLng)
+          .map((f) => ({
+            latitude: f.latitude,
+            longitude: f.longitude,
+            id: f.id,
+            number: f.number,
+          }));
+        globe.pointsData(pts);
+
+        // Selected plane sprite
+        const sel = flights.find((f) => f?.id === selectedId && validLatLng(f));
+        if (sel) {
+          globe.objectsData([sel]);
+
+          // Camera nudge to selected flight
+          globe.pointOfView(
+            { lat: sel.latitude, lng: sel.longitude, altitude: 1.6 },
+            900
+          );
+        } else {
+          globe.objectsData([]);
+        }
+      }
+
+      function setFlights(next) {
+        flights = Array.isArray(next) ? next : [];
+        if (flights.length && !selectedId) selectedId = flights[0]?.id || null;
+        render();
+      }
+
+      function setSelectedFlight(id) {
+        selectedId = id || null;
+        render();
+      }
+
+      window.Globe3D = { setFlights, setSelectedFlight };
+    }
+  });
 })();
