@@ -162,38 +162,78 @@
   }
 
   function renderFlightsList(from, to, flights) {
-    els.flightsList.innerHTML = "";
+  els.flightsList.innerHTML = "";
 
-    if (!flights.length) {
-      els.flightsList.innerHTML = `
-        <div class="lt-flightCard">
-          <div style="color:#8a99b3; font-weight:800;">No live flights found</div>
-          <div style="color:#8a99b3; margin-top:6px;">
-            No aircraft currently flying <strong>${from} → ${to}</strong>.
-          </div>
-        </div>`;
-      return;
-    }
-
-    for (const f of flights) {
-      const num = f.number || f.id || "—";
-      const airline = f.airline || "N/A";
-      const card = document.createElement("div");
-      card.className = "lt-flightCard";
-      card.innerHTML = `
-        <div class="lt-flightTop">
-          <div class="lt-flightNum">${num}</div>
-          <div class="lt-badge">${airline}</div>
+  if (!flights.length) {
+    els.flightsList.innerHTML = `
+      <div class="lt-flightCard">
+        <div style="color:#8a99b3; font-weight:800;">No live flights found</div>
+        <div style="color:#8a99b3; margin-top:6px; font-size:0.9rem;">
+          No aircraft currently flying <strong>${from} → ${to}</strong>.
         </div>
-        <div class="lt-flightRoute">${f.origin || from} → ${f.destination || to}</div>
-        <div class="lt-metrics">
-          <div><span>Altitude</span><strong>${feet(f.altitude)}</strong></div>
-          <div><span>Speed</span><strong>${kmh(f.speed)}</strong></div>
-          <div><span>Heading</span><strong>${heading(f.heading)}</strong></div>
-        </div>`;
-      els.flightsList.appendChild(card);
-    }
+      </div>
+    `;
+    // clear selection on globe
+    if (window.Globe3D?.setSelectedFlight) window.Globe3D.setSelectedFlight(null);
+    const box = document.getElementById("selectedFlightBox");
+    if (box) box.style.display = "none";
+    return;
   }
+
+  // default selection: first flight
+  const defaultId = flights[0]?.id || null;
+  if (window.Globe3D?.setFlights) window.Globe3D.setFlights(flights);
+  if (window.Globe3D?.setSelectedFlight) window.Globe3D.setSelectedFlight(defaultId);
+
+  const selectedBox = document.getElementById("selectedFlightBox");
+  const selectedText = document.getElementById("selectedFlightText");
+  if (selectedBox && selectedText) {
+    selectedBox.style.display = "block";
+    selectedText.textContent = flights[0]?.number || flights[0]?.id || "—";
+  }
+
+  flights.forEach((f, idx) => {
+    const num = f.number || f.id || "—";
+    const airline = f.airline || "N/A";
+    const alt = feetFromAltitude(f.altitude);
+    const spd = mphFromKnots(f.speed);
+    const hdg = (f.heading != null && !Number.isNaN(Number(f.heading))) ? `${Math.round(f.heading)}°` : "—";
+
+    const card = document.createElement("div");
+    card.className = "lt-flightCard" + (idx === 0 ? " is-selected" : "");
+    card.dataset.flightId = f.id;
+
+    card.innerHTML = `
+      <div class="lt-flightTop">
+        <div class="lt-flightNum">${num}</div>
+        <div class="lt-badge">${airline}</div>
+      </div>
+      <div class="lt-flightRoute">${f.origin || from} → ${f.destination || to}</div>
+      <div class="lt-metrics">
+        <div><span>Altitude</span><strong>${alt}</strong></div>
+        <div><span>Speed</span><strong>${spd}</strong></div>
+        <div><span>Heading</span><strong>${hdg}</strong></div>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      // UI highlight
+      els.flightsList.querySelectorAll(".lt-flightCard").forEach((x) => x.classList.remove("is-selected"));
+      card.classList.add("is-selected");
+
+      // Update selected flight label
+      if (selectedBox && selectedText) {
+        selectedBox.style.display = "block";
+        selectedText.textContent = num;
+      }
+
+      // Tell globe to focus on this one
+      if (window.Globe3D?.setSelectedFlight) window.Globe3D.setSelectedFlight(f.id);
+    });
+
+    els.flightsList.appendChild(card);
+  });
+}
 
   // ----------------------------
   // API
