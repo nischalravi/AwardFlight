@@ -1,200 +1,148 @@
-// public/airport-loader.js
-// Autocomplete + "city/airport name -> IATA" resolver for Live Tracker.
-// Requires public/airports-database.js which must define: window.AIRPORTS_DB = [...]
+/* public/airport-loader.js
+   Loads airport data from OpenFlights airports.dat
+   - Robust CSV parsing (handles commas inside quotes)
+   - Caches in localStorage (30 days)
+   - Exposes: window.AIRPORTS_DB (array)
+              window.searchAirports(query, limit) (function)
+*/
 
 (function () {
-  const MAX_RESULTS = 8;
+  const AIRPORTS_URL = "https://raw.githubusercontent.com/jpatokal/openflights/master/data/airports.dat";
+  const LS_KEY = "awardflights_airports_v1";
+  const LS_TS_KEY = "awardflights_airports_v1_ts";
+  const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
-  function norm(s) {
-    return String(s || "").trim();
-  }
-  function normKey(s) {
-    return norm(s).toLowerCase();
-  }
-  function isIata(s) {
-    const v = norm(s).toUpperCase();
-    return /^[A-Z]{3}$/.test(v) ? v : null;
-  }
+  function parseCsvLine(line) {
+    // Minimal CSV parser for OpenFlights format: fields quoted with "
+    const out = [];
+    let cur = "";
+    let inQuotes = false;
 
-  function getDb() {
-    const db = window.AIRPORTS_DB;
-    return Array.isArray(db) ? db : [];
-  }
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
 
-  // Return best matches for a query (by code, city, airport name, country)
-  function searchAirports(q) {
-    const db = getDb();
-    const query = normKey(q);
-    if (!query) return [];
-
-    const scored = [];
-    for (const a of db) {
-      if (!a) continue;
-      const code = norm(a.code).toUpperCase();
-      if (!/^[A-Z]{3}$/.test(code)) continue;
-
-      const city = norm(a.city || a.name);
-      const airport = norm(a.airport);
-      const country = norm(a.country);
-
-      const hay = `${code} ${city} ${airport} ${country}`.toLowerCase();
-
-      if (!hay.includes(query)) continue;
-
-      // simple scoring: code startsWith highest, then city startsWith, then contains
-      let score = 10;
-      if (code.toLowerCase() === query) score = 0;
-      else if (code.toLowerCase().startsWith(query)) score = 1;
-      else if (city.toLowerCase().startsWith(query)) score = 2;
-      else if (airport.toLowerCase().startsWith(query)) score = 3;
-      else score = 6;
-
-      scored.push({
-        score,
-        code,
-        city,
-        airport,
-        country
-      });
-    }
-
-    scored.sort((a, b) => a.score - b.score || a.code.localeCompare(b.code));
-    return scored.slice(0, MAX_RESULTS);
-  }
-
-  // Public resolver: "Boston" -> "BOS" if we find a strong match
-  function resolveToIata(input) {
-    const direct = isIata(input);
-    if (direct) return direct;
-
-    const results = searchAirports(input);
-
-    // If only one result, use it
-    if (results.length === 1) return results[0].code;
-
-    // If first result is much better (score) than second, choose it
-    if (results.length >= 2 && results[0].score + 1 < results[1].score) {
-      return results[0].code;
-    }
-
-    // Otherwise can't confidently auto-resolve
-    return null;
-  }
-
-  function renderSuggest(box, results, onPick) {
-    if (!box) return;
-    if (!results.length) {
-      box.style.display = "none";
-      box.innerHTML = "";
-      return;
-    }
-
-    box.innerHTML = results
-      .map((r, idx) => {
-        const main = r.city || r.airport || "";
-        const sub = [r.country, r.airport].filter(Boolean).join(" • ");
-        return `
-          <button type="button" data-idx="${idx}">
-            <span class="lt-s-code">${r.code}</span>
-            <span>
-              <div class="lt-s-main">${escapeHtml(main)}</div>
-              <div class="lt-s-sub">${escapeHtml(sub)}</div>
-            </span>
-          </button>
-        `;
-      })
-      .join("");
-
-    box.style.display = "block";
-
-    box.querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.getAttribute("data-idx"));
-        const picked = results[idx];
-        if (picked) onPick(picked);
-      });
-    });
-  }
-
-  function escapeHtml(s) {
-    return String(s || "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function attachAutocomplete(inputId, suggestId) {
-    const input = document.getElementById(inputId);
-    const box = document.getElementById(suggestId);
-    if (!input || !box) return;
-
-    let current = [];
-
-    function close() {
-      box.style.display = "none";
-      box.innerHTML = "";
-      current = [];
-    }
-
-    input.addEventListener("input", () => {
-      const q = input.value;
-
-      // If they've typed a clean IATA, don't spam suggestions.
-      if (isIata(q)) {
-        close();
-        input.value = isIata(q);
-        return;
+      if (ch === '"') {
+        // Double quote inside quotes -> literal quote
+        if (inQuotes && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === "," && !inQuotes) {
+        out.push(cur);
+        cur = "";
+      } else {
+        cur += ch;
       }
-
-      current = searchAirports(q);
-      renderSuggest(box, current, (picked) => {
-        input.value = picked.code;            // IMPORTANT: input becomes IATA code
-        input.dataset.city = picked.city || "";
-        input.dataset.airport = picked.airport || "";
-        input.dataset.country = picked.country || "";
-        close();
-
-        // let other scripts know an airport was chosen
-        input.dispatchEvent(new CustomEvent("airport:selected", { detail: picked }));
-      });
-    });
-
-    input.addEventListener("blur", () => {
-      // Small delay so click can register
-      setTimeout(() => {
-        // Try to resolve name -> IATA on blur if they typed full text
-        const resolved = resolveToIata(input.value);
-        if (resolved) input.value = resolved;
-        close();
-      }, 120);
-    });
-
-    // Close suggestions when clicking outside
-    document.addEventListener("click", (e) => {
-      if (e.target === input || box.contains(e.target)) return;
-      close();
-    });
+    }
+    out.push(cur);
+    return out.map((s) => s.trim());
   }
 
-  function init() {
-    const db = getDb();
-    if (!db.length) {
-      console.warn("AIRPORTS_DB missing. Ensure public/airports-database.js loads and sets window.AIRPORTS_DB.");
-      return;
+  function normalize(s) {
+    return String(s || "").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+
+  function scoreAirport(a, q) {
+    const code = (a.code || "").toLowerCase();
+    const city = normalize(a.city);
+    const name = normalize(a.airport);
+    const country = normalize(a.country);
+
+    let score = 0;
+    if (!q) return score;
+
+    // Strong: code prefix
+    if (code.startsWith(q)) score += 200;
+
+    // Strong: city prefix (Boston should win for "bo" / "bos")
+    if (city.startsWith(q)) score += 160;
+
+    // Strong: airport name prefix
+    if (name.startsWith(q)) score += 140;
+
+    // Medium: contains
+    if (city.includes(q)) score += 60;
+    if (name.includes(q)) score += 50;
+    if (country.includes(q)) score += 10;
+
+    // Tiny bonus for common countries when query is short (helps US results)
+    if (q.length <= 3 && (country === "united states" || country === "usa")) score += 5;
+
+    return score;
+  }
+
+  async function loadAirports() {
+    // Cache first
+    try {
+      const cached = localStorage.getItem(LS_KEY);
+      const ts = Number(localStorage.getItem(LS_TS_KEY) || 0);
+      if (cached && ts && Date.now() - ts < MAX_AGE_MS) {
+        const airports = JSON.parse(cached);
+        window.AIRPORTS_DB = airports;
+        window.searchAirports = (q, limit = 10) => search(airports, q, limit);
+        return airports;
+      }
+    } catch (_) {}
+
+    // Fetch
+    const res = await fetch(AIRPORTS_URL, { cache: "force-cache" });
+    const text = await res.text();
+
+    const airports = [];
+    for (const line of text.split("\n")) {
+      if (!line.trim()) continue;
+
+      const p = parseCsvLine(line);
+      // OpenFlights airports.dat fields:
+      // 0 id, 1 name, 2 city, 3 country, 4 IATA, 5 ICAO, 6 lat, 7 lon, 8 alt, 9 tz, 10 dst, 11 tzdb, 12 type, 13 source
+      const iata = (p[4] || "").replace(/"/g, "").trim();
+      if (!iata || iata === "\\N" || iata.length !== 3) continue;
+
+      const airport = (p[1] || "").replace(/"/g, "").trim();
+      const city = (p[2] || "").replace(/"/g, "").trim();
+      const country = (p[3] || "").replace(/"/g, "").trim();
+      const lat = Number((p[6] || "").replace(/"/g, "").trim());
+      const lon = Number((p[7] || "").replace(/"/g, "").trim());
+
+      airports.push({
+        code: iata.toUpperCase(),
+        airport,
+        city,
+        country,
+        lat: Number.isFinite(lat) ? lat : null,
+        lon: Number.isFinite(lon) ? lon : null
+      });
     }
 
-    window.resolveToIata = resolveToIata;
-    attachAutocomplete("from", "fromSuggest");
-    attachAutocomplete("to", "toSuggest");
+    // Save cache
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(airports));
+      localStorage.setItem(LS_TS_KEY, String(Date.now()));
+    } catch (_) {}
 
-    console.log(`✅ airport-loader ready (${db.length} airports)`);
+    window.AIRPORTS_DB = airports;
+    window.searchAirports = (q, limit = 10) => search(airports, q, limit);
+    return airports;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
+  function search(airports, query, limit = 10) {
+    const q = normalize(query);
+    if (!q || q.length < 2) return [];
+
+    return airports
+      .map((a) => ({ a, s: scoreAirport(a, q) }))
+      .filter((x) => x.s > 0)
+      .sort((x, y) => y.s - x.s)
+      .slice(0, limit)
+      .map((x) => x.a);
   }
+
+  // Kick off load
+  loadAirports().catch((e) => {
+    console.warn("Airport loader failed:", e);
+    window.AIRPORTS_DB = [];
+    window.searchAirports = () => [];
+  });
 })();

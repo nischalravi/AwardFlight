@@ -8,19 +8,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 
-  <!-- Globe dependencies -->
+  <!-- Globe deps -->
   <script defer src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
   <script defer src="https://unpkg.com/globe.gl@2.37.1/dist/globe.gl.min.js"></script>
 
   <style>
     .lt-page { padding: 110px 16px 32px; min-height: 100vh; }
     @media (max-width: 768px) { .lt-page { padding-top: 92px; } .nav { overflow-x:auto; } }
-
     .lt-container { max-width: 1200px; margin: 0 auto; }
 
-    .lt-hero { margin: 18px 0 18px; }
-    .lt-hero h1 { margin:0; font-size: clamp(1.6rem, 2.2vw, 2.6rem); }
-    .lt-hero p { margin: 8px 0 0; color:#8a99b3; max-width: 780px; line-height: 1.6; }
+    .lt-hero { display:grid; gap:10px; margin-bottom:18px; padding:18px 0 6px; }
+    .lt-hero h1 { font-size: clamp(1.6rem, 2.2vw, 2.6rem); line-height:1.15; margin:0; }
+    .lt-hero p { margin:0; color:#8a99b3; max-width:780px; font-size:1rem; line-height:1.6; }
 
     .lt-routebar {
       position: sticky; top: 82px; z-index: 30;
@@ -30,114 +29,71 @@
       padding: 12px; backdrop-filter: blur(10px);
       margin-bottom: 14px;
     }
-    @media (max-width: 768px) { .lt-routebar { top: 68px; } }
+    @media (max-width:768px){ .lt-routebar{ top:68px; } }
 
-    .lt-pillwrap { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    .lt-pill { background:#0a0f1e; border:1px solid #2a3644; border-radius:999px; padding:10px 12px; color:#fff; font-weight:800; font-size:.9rem; }
-    .lt-pill.muted { color:#8a99b3; font-weight:700; }
+    .lt-pillwrap{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .lt-pill{ background:#0a0f1e; border:1px solid #2a3644; border-radius:999px; padding:10px 12px; color:#fff; font-weight:700; font-size:.9rem; }
+    .lt-pill.muted{ color:#8a99b3; font-weight:600; }
+    .lt-actions{ display:flex; gap:10px; align-items:center; }
 
-    .lt-actions { display:flex; gap:10px; align-items:center; }
-    .lt-btn { border-radius:12px; padding:10px 12px; font-weight:900; font-family:inherit; cursor:pointer; border:1px solid #2a3644; background:#0a0f1e; color:#fff; }
-    .lt-btn.primary { background: linear-gradient(135deg, #c5ff68, #a8e050); color:#0a0f1e; border:none; }
-    .lt-btn:disabled { opacity:.6; cursor:not-allowed; }
+    .lt-btn{ border-radius:12px; padding:10px 12px; font-weight:800; font-family:inherit; cursor:pointer; border:1px solid #2a3644; background:#0a0f1e; color:#fff; }
+    .lt-btn.primary{ background: linear-gradient(135deg,#c5ff68,#a8e050); color:#0a0f1e; border:none; }
+    .lt-btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-    .lt-grid { display:grid; grid-template-columns: 340px 1fr; gap:14px; align-items:start; }
-    @media (max-width: 960px) { .lt-grid { grid-template-columns: 1fr; } }
+    .lt-grid{ display:grid; grid-template-columns:340px 1fr; gap:14px; align-items:start; }
+    @media (max-width:960px){ .lt-grid{ grid-template-columns:1fr; } }
 
-    .lt-card { background:#1e2836; border:1px solid #2a3644; border-radius:18px; padding:16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+    .lt-card{ background:#1e2836; border:1px solid #2a3644; border-radius:18px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
 
-    .lt-livebadge {
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border-radius:10px;
-      background: rgba(197,255,104,.12);
-      border: 1px solid rgba(197,255,104,.35);
-      color:#c5ff68; font-weight:900; font-size:.9rem;
-      margin-bottom: 10px;
+    .lt-livebadge{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:10px;
+      background: rgba(197,255,104,.12); border:1px solid rgba(197,255,104,.35);
+      color:#c5ff68; font-weight:800; font-size:.9rem; margin-bottom:10px;
     }
-    .lt-dot { width:8px; height:8px; border-radius:999px; background:#e74c3c; }
+    .lt-dot{ width:8px; height:8px; border-radius:999px; background:#e74c3c; }
 
-    .lt-field { margin: 10px 0 12px; position: relative; }
-    .lt-label { display:block; margin-bottom:6px; color:#8a99b3; font-weight:800; font-size:.9rem; }
-
-    .lt-input {
-      width:100%; padding:12px 12px; border-radius:12px;
-      border:1px solid #2a3644; background:#0a0f1e; color:#fff;
-      font-family:inherit; font-size:1rem; outline:none;
+    .lt-field{ margin:10px 0 12px; }
+    .lt-label{ display:block; margin-bottom:6px; color:#8a99b3; font-weight:700; font-size:.9rem; }
+    .lt-input{
+      width:100%; padding:12px; border-radius:12px; border:1px solid #2a3644;
+      background:#0a0f1e; color:#fff; font-family:inherit; font-size:1rem; outline:none;
     }
-    .lt-input:focus { border-color: rgba(197,255,104,.7); box-shadow: 0 0 0 3px rgba(197,255,104,.12); }
+    .lt-input:focus{ border-color: rgba(197,255,104,.7); box-shadow: 0 0 0 3px rgba(197,255,104,.12); }
+    .lt-help{ color:#8a99b3; font-size:.85rem; line-height:1.4; }
 
-    .lt-help { color:#8a99b3; font-size:.85rem; line-height:1.4; margin-top:6px; }
+    .lt-globeWrap{ display:grid; gap:12px; }
+    .lt-globeHeader{ display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
+    .lt-globeHeader h3{ margin:0; font-size:1.05rem; }
+    .lt-globeHeader .sub{ color:#8a99b3; font-size:.85rem; }
 
-    /* Autocomplete dropdown */
-    .lt-suggest {
-      position:absolute; left:0; right:0; top: calc(100% + 6px);
-      background:#0a0f1e; border:1px solid #2a3644; border-radius:12px;
-      overflow:hidden; display:none; z-index: 50;
-      max-height: 260px; overflow-y:auto;
-    }
-    .lt-suggest button {
-      width:100%; text-align:left; padding:10px 12px;
-      background:transparent; border:none; color:#fff; cursor:pointer;
-      font-family:inherit;
-      display:flex; gap:10px; align-items:center;
-    }
-    .lt-suggest button:hover { background:#142037; }
-    .lt-s-code { font-weight:900; color:#c5ff68; min-width: 52px; }
-    .lt-s-main { font-weight:800; }
-    .lt-s-sub { color:#8a99b3; font-size:.85rem; font-weight:700; }
-
-    /* Globe */
-    #globe {
-      width:100%;
-      height:440px;
-      border-radius:16px; overflow:hidden;
+    #globe{
+      width:100%; height:440px; border-radius:16px; overflow:hidden;
       border:1px solid #2a3644;
       background: radial-gradient(circle at 30% 20%, rgba(74,156,255,.18), rgba(10,15,30,.6));
     }
-    @media (max-width: 960px) { #globe { height: 360px; } }
+    @media (max-width:960px){ #globe{ height:360px; } }
 
-    .lt-globeHeader { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
-    .lt-badge { background:#2a3644; padding:4px 10px; border-radius:999px; font-size:.8rem; color:#cbd6ea; font-weight:800; }
+    .lt-flights{ display:grid; gap:10px; }
+    .lt-flightCard{ background:#0a0f1e; border:1px solid #2a3644; border-radius:14px; padding:12px; }
+    .lt-flightCard.is-selected{ outline:2px solid rgba(197,255,104,.55); }
+    .lt-flightTop{ display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
+    .lt-flightNum{ font-weight:900; }
+    .lt-badge{ background:#2a3644; padding:4px 10px; border-radius:999px; font-size:.8rem; color:#cbd6ea; font-weight:700; }
+    .lt-flightRoute{ color:#8a99b3; margin-bottom:8px; }
+    .lt-metrics{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; font-size:.9rem; }
+    .lt-metrics span{ color:#8a99b3; display:block; font-size:.82rem; margin-bottom:3px; }
+    .lt-metrics strong{ color:#c5ff68; }
 
-    /* Flights list */
-    .lt-flights { display:grid; gap:10px; margin-top: 12px; }
-    .lt-flightCard {
-      background:#0a0f1e; border:1px solid #2a3644; border-radius:14px;
-      padding:12px; cursor:pointer;
-      transition: transform .12s ease, border-color .12s ease;
-    }
-    .lt-flightCard:hover { transform: translateY(-1px); border-color: rgba(197,255,104,.35); }
-    .lt-flightCard.is-selected { border-color: rgba(197,255,104,.9); box-shadow: 0 0 0 3px rgba(197,255,104,.12); }
-
-    .lt-flightTop { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
-    .lt-flightNum { font-weight:900; }
-    .lt-flightRoute { color:#8a99b3; margin-bottom:8px; font-weight:700; }
-
-    .lt-metrics { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; font-size:.9rem; }
-    .lt-metrics span { color:#8a99b3; display:block; font-size:.82rem; margin-bottom:3px; font-weight:700; }
-    .lt-metrics strong { color:#c5ff68; }
-
-    .lt-error {
+    .lt-error{
       background: rgba(231,76,60,.12);
       border: 1px solid rgba(231,76,60,.45);
       color:#ffd2cf;
       border-radius:14px;
       padding:12px;
       margin-top:10px;
-      font-weight:700;
+      font-weight:600;
       display:none;
     }
-
-    .lt-selectedBox {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid #2a3644;
-      background: rgba(10,15,30,.6);
-      color:#cbd6ea;
-      font-weight:700;
-    }
-    .lt-selectedBox strong { color:#c5ff68; }
   </style>
 </head>
 
@@ -166,10 +122,7 @@
     <div class="lt-container">
       <section class="lt-hero">
         <h1>🛰️ Live Flight Tracker</h1>
-        <p>
-          Type an airport code or a full city/airport name (ex: <strong>Boston</strong>, <strong>London Heathrow</strong>).
-          Choose a flight from the results to track it on the globe.
-        </p>
+        <p>Type a city/airport name (Boston, London Heathrow) or an IATA code (BOS, LHR). Pick a flight from the list to track it on the globe.</p>
       </section>
 
       <div class="lt-routebar" id="routebar" aria-live="polite">
@@ -185,28 +138,23 @@
       </div>
 
       <section class="lt-grid" id="trackerSection">
-        <!-- Left: Search -->
         <div class="lt-card" id="formCard">
           <div class="lt-livebadge"><span class="lt-dot"></span>LIVE</div>
 
           <div class="lt-field">
             <label class="lt-label" for="from">Origin (IATA or City)</label>
             <input class="lt-input" id="from" autocomplete="off" placeholder="BOS or Boston" />
-            <div class="lt-suggest" id="fromSuggest"></div>
           </div>
 
           <div class="lt-field">
             <label class="lt-label" for="to">Destination (IATA or City)</label>
-            <input class="lt-input" id="to" autocomplete="off" placeholder="LHR or London" />
-            <div class="lt-suggest" id="toSuggest"></div>
+            <input class="lt-input" id="to" autocomplete="off" placeholder="LHR or London Heathrow" />
           </div>
 
           <div class="lt-field">
             <label class="lt-label" for="flightNumber">Flight number (optional)</label>
             <input class="lt-input" id="flightNumber" autocomplete="off" placeholder="e.g., BA178" />
-            <div class="lt-help">
-              Tip: Route shows all matching flights. Flight number filters the list.
-            </div>
+            <div class="lt-help" style="margin-top:6px;">Tip: Flight number filters the route results.</div>
           </div>
 
           <button class="lt-btn primary" id="btnTrack" type="button" style="width:100%; padding:14px;">
@@ -214,46 +162,34 @@
           </button>
 
           <div class="lt-help" style="margin-top:10px;">
-            Try: <strong>Boston</strong> → <strong>London</strong> (or <strong>BOS</strong> → <strong>LHR</strong>)
+            Try: <strong>Boston → London</strong> (or <strong>BOS → LHR</strong>)
           </div>
 
           <div id="formError" class="lt-error"></div>
         </div>
 
-        <!-- Right: Globe + Results -->
         <div class="lt-card">
-          <div class="lt-globeHeader">
-            <div>
-              <div style="font-weight:900;">3D Globe</div>
-              <div style="color:#8a99b3; font-size:.85rem; font-weight:700;" id="globeSub">
-                Search a route to plot flights. Click a flight to track it.
+          <div class="lt-globeWrap">
+            <div class="lt-globeHeader">
+              <div>
+                <h3>3D Globe</h3>
+                <div class="sub" id="globeSub">Search a route to plot flights. Click a flight to track it.</div>
               </div>
+              <div class="lt-badge" id="globeStatus">Idle</div>
             </div>
-            <div class="lt-badge" id="globeStatus">Idle</div>
+
+            <div id="globe" aria-label="3D globe visualization"></div>
+
+            <div class="lt-flights" id="flightsList"></div>
           </div>
-
-          <div id="globe" aria-label="3D globe visualization"></div>
-
-          <div class="lt-selectedBox" id="selectedFlightBox" style="display:none;">
-            Tracking: <strong id="selectedFlightText"></strong>
-          </div>
-
-          <div class="lt-flights" id="flightsList"></div>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- Airport database MUST NOT auto-download anything -->
-  <script src="./airports-database.js"></script>
-
-  <!-- Your autocomplete + airport resolution logic -->
-  <script src="./airport-loader.js"></script>
-
-  <!-- Globe renderer (your file) -->
+  <!-- ✅ Correct order -->
   <script src="./globe-3d.js"></script>
-
-  <!-- Page controller -->
+  <script src="./airport-loader.js"></script>
   <script src="./live-tracker-client.js"></script>
 </body>
 </html>
