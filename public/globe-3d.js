@@ -1,8 +1,4 @@
-/* public/globe-3d.js
-   Exposes: window.Globe3D = { init(el), setFlights(flights), setSelectedFlight(id), clear() }
-   - Renders ALL flights as dots
-   - Renders SELECTED flight as a ✈ label + camera focus
-*/
+/* public/globe-3d.js - BIGGER points + selected ✈ label */
 
 (function () {
   let globe = null;
@@ -15,7 +11,6 @@
     const n = Number(x);
     return Number.isFinite(n) ? n : null;
   }
-
   function valid(f) {
     const lat = toNum(f.latitude);
     const lng = toNum(f.longitude);
@@ -27,7 +22,7 @@
     globeEl = el;
 
     if (!window.Globe) {
-      console.warn("Globe.gl not loaded (window.Globe missing)");
+      console.warn("Globe.gl not loaded");
       return;
     }
 
@@ -35,20 +30,23 @@
       .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
       .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
       .backgroundColor("#0a0f1e")
-      .pointAltitude(0.02)
-      .pointRadius(0.35)
+
+      // ✅ Make points easy to see
+      .pointAltitude(0.06)
+      .pointRadius(0.7)
       .pointColor(() => "#c5ff68")
       .pointsData([])
-      .labelAltitude(0.06)
-      .labelSize(1.2)
-      .labelDotRadius(0.25)
+
+      // ✅ Selected flight label
+      .labelAltitude(0.10)
+      .labelSize(1.4)
+      .labelDotRadius(0.35)
       .labelColor(() => "#c5ff68")
       .labelsData([]);
 
     globe.controls().enableDamping = true;
     globe.controls().dampingFactor = 0.08;
 
-    // Make sure canvas sizes correctly
     requestAnimationFrame(() => {
       try {
         globe.width(globeEl.clientWidth);
@@ -75,7 +73,7 @@
         lat: toNum(f.latitude),
         lng: toNum(f.longitude),
         id: f.id,
-        number: f.number || f.id
+        number: f.number || f.id,
       }));
 
     globe.pointsData(pts);
@@ -86,22 +84,18 @@
       const lng = toNum(sel.longitude);
 
       globe.labelsData([
-        {
-          lat,
-          lng,
-          text: `✈ ${sel.number || sel.id}`
-        }
+        { lat, lng, text: `✈ ${sel.number || sel.id}` }
       ]);
       globe.labelText((d) => d.text);
 
-      globe.pointOfView({ lat, lng, altitude: 1.6 }, 900);
+      globe.pointOfView({ lat, lng, altitude: 1.55 }, 900);
     } else {
       globe.labelsData([]);
     }
   }
 
-  function setFlights(nextFlights) {
-    flights = Array.isArray(nextFlights) ? nextFlights : [];
+  function setFlights(next) {
+    flights = Array.isArray(next) ? next : [];
     if (flights.length && !selectedId) selectedId = flights[0].id;
     render();
   }
