@@ -1,115 +1,96 @@
-// api/amadeus/search.js
-const axios = require("axios");
+const express = require('express');
+const router = express.Router();
 
-const AMADEUS_BASE_URL = process.env.AMADEUS_BASE_URL || "https://test.api.amadeus.com";
-const AMADEUS_CLIENT_ID = process.env.AMADEUS_CLIENT_ID;
-const AMADEUS_CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET;
+// Amadeus API credentials from env
+const AMADEUS_KEY = process.env.AMADEUS_API_KEY;
+const AMADEUS_SECRET = process.env.AMADEUS_API_SECRET;
+const AMADEUS_BASE = process.env.AMADEUS_BASE_URL || 'https://test.api.amadeus.com';
 
-function isIata(code) {
-  return typeof code === "string" && /^[A-Za-z]{3}$/.test(code.trim());
-}
-function normIata(code) {
-  return String(code || "").trim().toUpperCase();
-}
-function isISODate(s) {
-  return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
-}
-function safeInt(v, fallback = 1) {
-  const n = Number(v);
-  return Number.isInteger(n) ? n : fallback;
-}
+let tokenCache = { token: null, expires: 0 };
 
-// best-effort serverless cache
-let cachedToken = null;
-let cachedExpiry = 0;
+async function getToken() {
+  if (tokenCache.token && Date.now() < tokenCache.expires - 60000) return tokenCache.token;
+  if (!AMADEUS_KEY || !AMADEUS_SECRET) throw new Error('Amadeus API credentials not configured');
 
-async function getAmadeusToken() {
-  if (cachedToken && Date.now() < cachedExpiry) return cachedToken;
-
-  if (!AMADEUS_CLIENT_ID || !AMADEUS_CLIENT_SECRET) {
-    throw new Error("Amadeus credentials not configured");
-  }
-
-  const body = new URLSearchParams();
-  body.append("grant_type", "client_credentials");
-  body.append("client_id", AMADEUS_CLIENT_ID);
-  body.append("client_secret", AMADEUS_CLIENT_SECRET);
-
-  const resp = await axios.post(`${AMADEUS_BASE_URL}/v1/security/oauth2/token`, body, {
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    timeout: 15000
+  const res = await fetch(`${AMADEUS_BASE}/v1/security/oauth2/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=client_credentials&client_id=${AMADEUS_KEY}&client_secret=${AMADEUS_SECRET}`,
   });
-
-  const token = resp.data?.access_token;
-  const expiresIn = resp.data?.expires_in;
-
-  if (!token || !expiresIn) throw new Error("No access token in response");
-
-  cachedToken = token;
-  cachedExpiry = Date.now() + Math.max(30, expiresIn - 30) * 1000;
-  return cachedToken;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error_description || 'Auth failed');
+  tokenCache = { token: data.access_token, expires: Date.now() + data.expires_in * 1000 };
+  return data.access_token;
 }
 
-module.exports = async (req, res) => {
-  res.setHeader("Cache-Control", "no-store");
+function formatDuration(iso) {
+  if (!iso) return '';
+  const h = (iso.match(/(\d+)H/) || [])[1] || 0;
+  const m = (iso.match(/(\d+)M/) || [])[1] || 0;
+  return `${h}h ${m}m`;
+}
 
-  // Optional CORS allowlist (mainly matters if you call API from other origins)
-  const origin = req.headers.origin;
-  const allowed = (process.env.ALLOWED_ORIGINS || "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
+function formatTime(dt) {
+  if (!dt) return '';
+  const d = new Date(dt);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
 
-  if (origin && allowed.length && allowed.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader("Vary", "Origin");
-
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    return res.status(204).end();
-  }
-
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
-  const from = normIata(req.query.from);
-  const to = normIata(req.query.to);
-  const date = String(req.query.date || "").trim();
-  const adults = safeInt(req.query.adults, 1);
-
-  if (!isIata(from) || !isIata(to) || from === to) {
-    return res.status(400).json({ error: "from/to must be valid IATA and not the same" });
-  }
-  if (!isISODate(date)) {
-    return res.status(400).json({ error: "date must be YYYY-MM-DD" });
-  }
-  if (adults < 1 || adults > 9) {
-    return res.status(400).json({ error: "adults must be between 1 and 9" });
-  }
-
+router.get('/search', async (req, res) => {
   try {
-    const token = await getAmadeusToken();
+    const { from, to, date, adults = '1' } = req.query;
+    if (!from || !to || !date) return res.status(400).json({ error: 'Missing from, to, or date' });
 
-    const resp = await axios.get(`${AMADEUS_BASE_URL}/v2/shopping/flight-offers`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: {
-        originLocationCode: from,
-        destinationLocationCode: to,
-        departureDate: date,
-        adults,
-        max: 50,
-        currencyCode: "USD"
-      },
-      timeout: 15000
+    const token = await getToken();
+    const url = new URL(`${AMADEUS_BASE}/v2/shopping/flight-offers`);
+    url.searchParams.set('originLocationCode', from);
+    url.searchParams.set('destinationLocationCode', to);
+    url.searchParams.set('departureDate', date);
+    url.searchParams.set('adults', adults);
+    url.searchParams.set('max', '20');
+    url.searchParams.set('currencyCode', 'USD');
+
+    const resp = await fetch(url.toString(), {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      const msg = data?.errors?.[0]?.detail || data?.error_description || 'Amadeus API error';
+      return res.status(resp.status).json({ error: msg });
+    }
+
+    const offers = data?.data || [];
+    const dictionaries = data?.dictionaries || {};
+
+    const flights = offers.map(offer => {
+      const seg = offer.itineraries?.[0]?.segments || [];
+      const first = seg[0] || {};
+      const last = seg[seg.length - 1] || {};
+      const carrier = first.carrierCode || '';
+      const airlineName = dictionaries?.carriers?.[carrier] || carrier;
+
+      return {
+        airline: airlineName,
+        airlineCode: carrier,
+        code: `${carrier}${first.number || ''}`,
+        price: parseFloat(offer.price?.total) || 0,
+        departTime: formatTime(first.departure?.at),
+        arriveTime: formatTime(last.arrival?.at),
+        departAirport: first.departure?.iataCode || from,
+        arriveAirport: last.arrival?.iataCode || to,
+        duration: formatDuration(offer.itineraries?.[0]?.duration),
+        stops: Math.max(0, seg.length - 1),
+        stopInfo: seg.length === 1 ? 'Non-stop' : `${seg.length - 1} stop${seg.length > 2 ? 's' : ''}`,
+        aircraft: dictionaries?.aircraft?.[first.aircraft?.code] || first.aircraft?.code || '',
+      };
     });
 
-    const offers = Array.isArray(resp.data?.data) ? resp.data.data : [];
-    return res.status(200).json({ success: true, count: offers.length, data: offers });
+    res.json({ flights, count: flights.length, message: flights.length ? null : 'No flights found for this route/date.' });
   } catch (err) {
-    const status = err.response?.status || 500;
-    return res.status(status).json({ success: false, error: "Amadeus API error", code: status });
+    console.error('Amadeus search error:', err);
+    res.status(500).json({ error: err.message || 'Server error' });
   }
-};
+});
+
+module.exports = router;

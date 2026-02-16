@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Search 100+ airlines, compare award flights, and book business class for fewer points. Real-time flight tracking and points optimization.">
+  <title>Award Flights — Search. Compare. Fly Smarter.</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+      </div>
+      <div class="logo-text">Award<span>Flights</span></div>
+    </a>
+
+    <nav class="nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="search.html">Search Flights</a>
+      <a href="live-tracker.html">Live Tracker</a>
+      <a href="calculator.html">Points Calculator</a>
+      <a href="deals.html">Hot Deals</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm">Sign In</button>
+      <button class="btn btn-primary btn-sm">Sign Up</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div style="position: relative; z-index: 1; width: 100%;">
+    <div class="hero-badge">⭐⭐⭐⭐⭐ Trusted by 50,000+ travelers</div>
+
+    <h1>
+      Search. Compare.<br>
+      <span class="gradient">Fly Smarter.</span>
+    </h1>
+    <p>Flights, hotels, and packages with real-time tracking and points optimization. Book business class for economy points.</p>
+
+    <!-- ── Search Widget ── -->
+    <div class="search-box" id="home-search">
+      <div class="search-tabs">
+        <button class="search-tab active" data-tab="roundtrip" onclick="switchTab('roundtrip')">✈ Round Trip</button>
+        <button class="search-tab" data-tab="oneway" onclick="switchTab('oneway')">→ One Way</button>
+      </div>
+
+      <div id="form-error" class="error-box" role="alert"></div>
+
+      <form id="search-form" novalidate>
+        <div class="search-grid">
+          <div class="airport-wrap">
+            <label class="label">From</label>
+            <input type="text" id="input-from" class="input input-airport" placeholder="BOS — Boston" autocomplete="off" inputmode="search">
+          </div>
+
+          <div style="padding-bottom: 6px;">
+            <button type="button" class="swap-btn" onclick="swapAirports()">⇄</button>
+          </div>
+
+          <div class="airport-wrap">
+            <label class="label">To</label>
+            <input type="text" id="input-to" class="input input-airport" placeholder="LHR — London" autocomplete="off" inputmode="search">
+          </div>
+
+          <div>
+            <label class="label">Departure</label>
+            <input type="date" id="departure-date" class="input" required style="color-scheme: dark;">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="margin-bottom: 6px; white-space: nowrap;">
+            🔍 Search
+          </button>
+        </div>
+
+        <div id="return-field" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 12px;">
+          <div>
+            <label class="label">Return</label>
+            <input type="date" id="return-date" class="input" style="color-scheme: dark;">
+          </div>
+          <div>
+            <label class="label">Travelers</label>
+            <select id="passengers" class="input select-input">
+              <option selected>1 traveler</option>
+              <option>2 travelers</option>
+              <option>3 travelers</option>
+              <option>4 travelers</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Cabin Class</label>
+            <select id="cabin" class="input select-input">
+              <option selected>Economy</option>
+              <option>Premium Economy</option>
+              <option>Business</option>
+              <option>First Class</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Savings Visual ── -->
+    <div style="text-align: center; margin-top: 40px;">
+      <p style="color: var(--text-dim); margin-bottom: 16px;">See how much you can save:</p>
+      <div class="savings-bar">
+        <div class="savings-old">
+          <div class="savings-label">Credit Card Portal</div>
+          <div class="amount">200,000 pts</div>
+        </div>
+        <div class="savings-arrow">→</div>
+        <div class="savings-new">
+          <div class="savings-label">Award Flights</div>
+          <div class="amount">55,000 pts</div>
+        </div>
+        <div class="savings-badge">💰 Save 72%!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="section">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-card card-glow" onclick="location.href='search.html'">
+        <div class="icon-wrap" style="background: rgba(0, 212, 170, 0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h3>Smart Flight Search</h3>
+        <p>Compare flights across 100+ airlines with points pricing alongside cash.</p>
+      </div>
+
+      <div class="feature-card card-glow" onclick="location.href='live-tracker.html'">
+        <div class="icon-wrap" style="background: rgba(59, 130, 246, 0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <h3>3D Flight Tracker</h3>
+        <p>Track any flight live on an interactive globe with weather data.</p>
+      </div>
+
+      <div class="feature-card card-glow" onclick="location.href='calculator.html'">
+        <div class="icon-wrap" style="background: rgba(255, 184, 0, 0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Points Calculator</h3>
+        <p>Find the best transfer partner and redemption for your points.</p>
+      </div>
+
+      <div class="feature-card card-glow" onclick="location.href='deals.html'">
+        <div class="icon-wrap" style="background: rgba(139, 92, 246, 0.1);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>
+        </div>
+        <h3>Hot Deals</h3>
+        <p>Premium routes at economy prices. Business class for fewer points.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TRENDING ═══ -->
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg>
+      <h2 class="section-title" style="margin-bottom: 0;">Trending Destinations</h2>
+    </div>
+    <div class="trending-grid">
+      <div class="trending-card" onclick="location.href='search.html?from=BOS&to=NRT&date=2026-04-15&adults=1&cabin=ECONOMY&src=home'">
+        <div>
+          <div class="trending-flag">🇯🇵</div>
+          <div class="trending-dest">Tokyo</div>
+          <div class="trending-temp">18°C</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="trending-price">$712</div>
+          <div class="badge badge-gold" style="margin-top: 4px;">55K UR via ANA</div>
+        </div>
+      </div>
+      <div class="trending-card" onclick="location.href='search.html?from=BOS&to=LHR&date=2026-04-15&adults=1&cabin=ECONOMY&src=home'">
+        <div>
+          <div class="trending-flag">🇬🇧</div>
+          <div class="trending-dest">London</div>
+          <div class="trending-temp">12°C</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="trending-price">$445</div>
+          <div class="badge badge-gold" style="margin-top: 4px;">30K Avios</div>
+        </div>
+      </div>
+      <div class="trending-card" onclick="location.href='search.html?from=BOS&to=SIN&date=2026-04-15&adults=1&cabin=ECONOMY&src=home'">
+        <div>
+          <div class="trending-flag">🇸🇬</div>
+          <div class="trending-dest">Singapore</div>
+          <div class="trending-temp">31°C</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="trending-price">$890</div>
+          <div class="badge badge-gold" style="margin-top: 4px;">60K KrisFlyer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="container">
+    <p>© 2026 Award Flights. All rights reserved. We may earn a commission when you book through our links.</p>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="./airport-loader.js"></script>
+<script src="./script.js"></script>
+<script>
+  let currentTab = 'roundtrip';
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.search-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    const retField = document.getElementById('return-field');
+    if (retField) retField.style.display = tab === 'oneway' ? 'none' : 'grid';
+  }
+
+  function swapAirports() {
+    const f = document.getElementById('input-from');
+    const t = document.getElementById('input-to');
+    if (f && t) { const tmp = f.value; f.value = t.value; t.value = tmp; }
+  }
+
+  function getIata(val) {
+    const v = (val || '').trim();
+    const code = v.split(/[\s—-]/)[0].trim().toUpperCase();
+    return /^[A-Z]{3}$/.test(code) ? code : '';
+  }
+
+  document.getElementById('search-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errBox = document.getElementById('form-error');
+    errBox.classList.remove('visible'); errBox.textContent = '';
+
+    const from = getIata(document.getElementById('input-from')?.value);
+    const to = getIata(document.getElementById('input-to')?.value);
+    const date = document.getElementById('departure-date')?.value;
+    const pax = document.getElementById('passengers')?.value || '1';
+    const cabin = document.getElementById('cabin')?.value || 'Economy';
+
+    if (!from) { errBox.textContent = 'Please enter a valid origin airport.'; errBox.classList.add('visible'); return; }
+    if (!to) { errBox.textContent = 'Please enter a valid destination airport.'; errBox.classList.add('visible'); return; }
+    if (from === to) { errBox.textContent = 'Origin and destination cannot be the same.'; errBox.classList.add('visible'); return; }
+    if (!date) { errBox.textContent = 'Please select a departure date.'; errBox.classList.add('visible'); return; }
+
+    const adults = pax.match(/\d/)?.[0] || '1';
+    const cabinMap = { 'Economy': 'ECONOMY', 'Premium Economy': 'PREMIUM_ECONOMY', 'Business': 'BUSINESS', 'First Class': 'FIRST' };
+    const url = new URL('search.html', location.origin);
+    url.searchParams.set('from', from);
+    url.searchParams.set('to', to);
+    url.searchParams.set('date', date);
+    url.searchParams.set('adults', adults);
+    url.searchParams.set('cabin', cabinMap[cabin] || 'ECONOMY');
+    url.searchParams.set('src', 'home');
+    location.href = url.toString();
+  });
+
+  window.switchTab = switchTab;
+  window.swapAirports = swapAirports;
+</script>
+
+</body>
+</html>

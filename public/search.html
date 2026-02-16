@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Results — Award Flights</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div>
+      <div class="logo-text">Award<span>Flights</span></div>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="search.html" class="active">Search Flights</a>
+      <a href="live-tracker.html">Live Tracker</a>
+      <a href="calculator.html">Points Calculator</a>
+      <a href="deals.html">Hot Deals</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm">Sign In</button>
+      <button class="btn btn-primary btn-sm">Sign Up</button>
+    </div>
+  </div>
+</header>
+
+<main style="min-height: 100vh; padding: 100px 2rem 40px; background: var(--bg);">
+  <div class="container-wide">
+    <!-- Top bar with route pills -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="pill" id="summaryPills"></div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-ghost btn-sm" id="btnModify">Modify</button>
+        <button class="btn btn-primary btn-sm" id="btnNewSearch">New Search</button>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 20px;">
+      <!-- Sidebar Filters -->
+      <aside class="card">
+        <h3 style="margin-bottom: 16px;">Filters</h3>
+
+        <div style="margin-bottom: 16px;">
+          <label class="label">Sort by</label>
+          <select class="input select-input" id="sortBy">
+            <option value="price_asc">Price (Low → High)</option>
+            <option value="price_desc">Price (High → Low)</option>
+            <option value="stops_asc">Stops (Fewest)</option>
+            <option value="duration_asc">Duration (Shortest)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label class="label">Max Stops</label>
+          <select class="input select-input" id="maxStops">
+            <option value="">Any</option>
+            <option value="0">Non-stop only</option>
+            <option value="1">Up to 1 stop</option>
+            <option value="2">Up to 2 stops</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label class="label">Max Price (USD)</label>
+          <input class="input" id="maxPrice" placeholder="e.g., 800" inputmode="numeric">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label class="label">Points Estimates</label>
+          <select class="input select-input" id="togglePoints">
+            <option value="off">Off</option>
+            <option value="on">On (estimates)</option>
+          </select>
+        </div>
+
+        <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
+        <button class="btn btn-ghost btn-sm" id="btnResetFilters" style="width: 100%;">Reset Filters</button>
+      </aside>
+
+      <!-- Results -->
+      <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 class="section-title" style="margin-bottom: 0;">Results</h2>
+          <span style="color: var(--text-dim); font-size: 14px;" id="resultsHint"></span>
+        </div>
+        <div id="errorBox" class="error-box" role="alert"></div>
+        <div id="results"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container"><p>© 2026 Award Flights. All rights reserved.</p></div>
+</footer>
+
+<script defer src="./search-client.js"></script>
+</body>
+</html>

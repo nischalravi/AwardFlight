@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Points Calculator — Award Flights</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div>
+      <div class="logo-text">Award<span>Flights</span></div>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="search.html">Search Flights</a>
+      <a href="live-tracker.html">Live Tracker</a>
+      <a href="calculator.html" class="active">Points Calculator</a>
+      <a href="deals.html">Hot Deals</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm">Sign In</button>
+      <button class="btn btn-primary btn-sm">Sign Up</button>
+    </div>
+  </div>
+</header>
+
+<main style="min-height: 100vh; padding: 100px 2rem 40px;">
+  <div class="container" style="max-width: 1000px;">
+    <div style="text-align: center; margin-bottom: 40px;">
+      <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 12px;">
+        💰 <span style="background: linear-gradient(135deg, var(--accent), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Points Value Calculator</span>
+      </h1>
+      <p style="color: var(--text-dim); font-size: 1.1rem;">Discover how much your credit card points are really worth</p>
+    </div>
+
+    <div class="card" style="padding: 40px;">
+      <h2 style="font-family: var(--font-display); font-size: 1.5rem; text-align: center; margin-bottom: 24px;">Calculate Your Points Value</h2>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;">
+        <div>
+          <label class="label">Your Points Balance</label>
+          <input type="number" id="calc-points" class="input" placeholder="100000" value="100000" style="font-family: var(--font-mono); font-weight: 700; font-size: 16px;">
+        </div>
+        <div>
+          <label class="label">Points Program</label>
+          <select id="calc-program" class="input select-input" style="font-weight: 600;">
+            <option value="1.5">Chase Ultimate Rewards (1.5¢/pt)</option>
+            <option value="1.4">Amex Membership Rewards (1.4¢/pt)</option>
+            <option value="1.3">Citi ThankYou Points (1.3¢/pt)</option>
+            <option value="1.2">Capital One Miles (1.2¢/pt)</option>
+            <option value="1.0">Airline Miles (1.0¢/pt)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 20px; padding: 28px; background: var(--bg-surface); border-radius: var(--radius-lg); position: relative; flex-wrap: wrap;">
+        <div style="flex: 1; text-align: center; padding: 20px; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border); min-width: 200px;">
+          <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Portal Value</div>
+          <div id="portal-value" style="font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: var(--red);">$1,500</div>
+          <div style="font-size: 13px; color: var(--text-dim);">Standard redemption</div>
+        </div>
+
+        <div style="font-size: 1.5rem; font-weight: 700; color: var(--blue);">VS</div>
+
+        <div style="flex: 1; text-align: center; padding: 20px; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--accent); min-width: 200px;">
+          <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Award Flights Value</div>
+          <div id="smart-value" style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; color: var(--accent);">$3,750</div>
+          <div style="font-size: 13px; color: var(--text-dim);">Smart transfers</div>
+        </div>
+      </div>
+
+      <div id="calc-savings" style="text-align: center; margin-top: 20px; padding: 12px 24px; background: var(--accent); color: var(--bg); border-radius: var(--radius-sm); font-weight: 700; display: inline-block; margin-left: auto; margin-right: auto; width: auto;">
+        💰 You could save $2,250 (150% more value!)
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="search.html" class="btn btn-primary btn-lg">Start Searching Flights</a>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container"><p>© 2026 Award Flights. All rights reserved.</p></div>
+</footer>
+
+<script>
+  const pointsInput = document.getElementById('calc-points');
+  const programSelect = document.getElementById('calc-program');
+
+  function calculate() {
+    const pts = parseInt(pointsInput.value) || 0;
+    const cpp = parseFloat(programSelect.value);
+    const portal = (pts * cpp) / 100;
+    const smart = (pts * cpp * 2.5) / 100;
+    const savings = smart - portal;
+    const pct = portal > 0 ? Math.round((savings / portal) * 100) : 0;
+
+    document.getElementById('portal-value').textContent = '$' + portal.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    document.getElementById('smart-value').textContent = '$' + smart.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    document.getElementById('calc-savings').textContent = '💰 You could save $' + savings.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' (' + pct + '% more value!)';
+  }
+
+  pointsInput.addEventListener('input', calculate);
+  programSelect.addEventListener('change', calculate);
+  calculate();
+</script>
+</body>
+</html>

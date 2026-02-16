@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hot Deals — Award Flights</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></div>
+      <div class="logo-text">Award<span>Flights</span></div>
+    </a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="search.html">Search Flights</a>
+      <a href="live-tracker.html">Live Tracker</a>
+      <a href="calculator.html">Points Calculator</a>
+      <a href="deals.html" class="active">Hot Deals</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm">Sign In</button>
+      <button class="btn btn-primary btn-sm">Sign Up</button>
+    </div>
+  </div>
+</header>
+
+<main style="min-height: 100vh; padding: 100px 2rem 60px;">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 12px;">
+        🔥 <span style="background: linear-gradient(135deg, var(--accent), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Hot Deals</span> This Week
+      </h1>
+      <p style="color: var(--text-dim); font-size: 1.1rem;">Premium routes at economy prices</p>
+    </div>
+
+    <div class="deals-grid">
+      <!-- Paris -->
+      <div class="deal-card" onclick="location.href='search.html?from=JFK&to=CDG&date=2026-03-15&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇫🇷</div>
+              <div class="deal-name">New York to Paris</div>
+              <div class="deal-info">JFK → CDG · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">50,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">points</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-accent">Chase UR 1:1</span>
+            <span class="badge badge-blue">Amex MR 1:1</span>
+            <span class="badge badge-purple">Citi TYP 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+
+      <!-- Maldives -->
+      <div class="deal-card" onclick="location.href='search.html?from=ORD&to=MLE&date=2026-04-01&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇲🇻</div>
+              <div class="deal-name">Chicago to Maldives</div>
+              <div class="deal-info">ORD → MLE · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">70,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">points</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-accent">Chase UR 1:1</span>
+            <span class="badge badge-blue">Amex MR 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+
+      <!-- Tokyo -->
+      <div class="deal-card" onclick="location.href='search.html?from=LAX&to=NRT&date=2026-04-15&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇯🇵</div>
+              <div class="deal-name">LA to Tokyo</div>
+              <div class="deal-info">LAX → NRT · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">60,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">points</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-accent">Chase UR → VS → ANA</span>
+            <span class="badge badge-blue">Amex MR 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+
+      <!-- London -->
+      <div class="deal-card" onclick="location.href='search.html?from=BOS&to=LHR&date=2026-03-20&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇬🇧</div>
+              <div class="deal-name">Boston to London</div>
+              <div class="deal-info">BOS → LHR · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">26,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">Avios</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-accent">Chase UR 1:1</span>
+            <span class="badge badge-blue">Amex MR 1:1</span>
+            <span class="badge badge-purple">Citi TYP 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+
+      <!-- Singapore -->
+      <div class="deal-card" onclick="location.href='search.html?from=JFK&to=SIN&date=2026-05-01&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇸🇬</div>
+              <div class="deal-name">New York to Singapore</div>
+              <div class="deal-info">JFK → SIN · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">92,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">KrisFlyer</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-accent">Chase UR 1:1</span>
+            <span class="badge badge-purple">Citi TYP 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+
+      <!-- Dubai -->
+      <div class="deal-card" onclick="location.href='search.html?from=JFK&to=DXB&date=2026-04-10&adults=1&cabin=BUSINESS&src=home'">
+        <div class="deal-header">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div class="deal-flag">🇦🇪</div>
+              <div class="deal-name">New York to Dubai</div>
+              <div class="deal-info">JFK → DXB · Business Class</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="deal-price" style="color: var(--accent);">85,000</div>
+              <div style="font-size: 13px; color: var(--text-dim);">Skywards</div>
+            </div>
+          </div>
+        </div>
+        <div class="deal-body">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <span class="badge badge-blue">Amex MR 1:1</span>
+          </div>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 16px;">View Deal →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclosure">
+      <p>Deals shown are based on recent award availability. Point requirements may vary. We may earn a commission when you book through our links.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container"><p>© 2026 Award Flights. All rights reserved.</p></div>
+</footer>
+</body>
+</html>
