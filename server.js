@@ -396,18 +396,37 @@ app.get('/api/live/route', async (req, res) => {
       f => f.originAirportIata === from && f.destinationAirportIata === to
     );
 
-    const formatted = filtered.map(f => ({
-      id: f.id,
-      number: f.number,
-      airline: f.airlineIcao,
-      latitude: f.latitude,
-      longitude: f.longitude,
-      altitude: f.altitude,
-      speed: f.groundSpeed,
-      heading: f.heading,
-      origin: f.originAirportIata,
-      destination: f.destinationAirportIata
-    }));
+const formatted = filtered.map(f => {
+  const airlineIcao = (f.airlineIcao || '').toUpperCase().trim();
+  const airlineIata = (f.airlineIata || '').toUpperCase().trim(); // may or may not exist
+  const flightNumber = (f.number || '').toUpperCase().trim();
+
+  return {
+    id: f.id,
+    number: flightNumber || f.callsign || String(f.id),
+    callsign: f.callsign || null,
+
+    // keep existing "airline" for backward compatibility with your UI badge
+    airline: airlineIcao || airlineIata || "—",
+
+    // new fields (for logos + nicer display)
+    airlineIcao: airlineIcao || null,
+    airlineIata: airlineIata || null,
+    airlineName: airlineIata ? getAirlineName(airlineIata) : (airlineIcao || null),
+
+    // optional: if you later host logos locally, set a URL like `/logos/DL.png`
+    airlineLogoUrl: airlineIata ? `/logos/${airlineIata}.png` : null,
+
+    latitude: f.latitude,
+    longitude: f.longitude,
+    altitude: f.altitude,
+    speed: f.groundSpeed,
+    heading: f.heading,
+
+    origin: f.originAirportIata,
+    destination: f.destinationAirportIata
+  };
+});
 
     res.json({ success: true, count: formatted.length, flights: formatted });
   } catch (error) {
